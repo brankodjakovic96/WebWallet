@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.ApplicationServices\Core.ApplicationServices.csproj" />
-    <ProjectReference Include="..\Core\Domain\Core.Domain.csproj" />
-    <ProjectReference Include="..\Core\Infrastructure\DataAccess\EfCoreDataAccess\Core.Infrastructure.DataAccess.EfCoreDataAccess.csproj" />
+    <ProjectReference Include="..\..\Core\Core.ApplicationServices\Core.ApplicationServices.csproj" />
+    <ProjectReference Include="..\..\Core\Domain\Core.Domain.csproj" />
+    <ProjectReference Include="..\..\Core\Infrastructure\DataAccess\EfCoreDataAccess\Core.Infrastructure.DataAccess.EfCoreDataAccess.csproj" />
   </ItemGroup>
 
 </Project>
