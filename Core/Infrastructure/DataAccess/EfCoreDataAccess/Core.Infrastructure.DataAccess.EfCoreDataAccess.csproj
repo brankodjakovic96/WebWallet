@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Common\Common.EfCoreDataAccess\Common.EfCoreDataAccess.csproj" />
+    <ProjectReference Include="..\..\..\..\Common\EfCoreDataAccess\Common.EfCoreDataAccess.csproj" />
     <ProjectReference Include="..\..\..\Domain\Core.Domain.csproj" />
   </ItemGroup>
 
