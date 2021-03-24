@@ -1,5 +1,6 @@
 ﻿using Core.Domain.Entities;
 using Core.Domain.Repositories;
+using Core.Domain.Services.Internal.BankRoutingService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,14 @@ namespace Core.ApplicationServices
     public class WalletService
     {
         private readonly ICoreUnitOfWork CoreUnitOfWork;
-
-        public WalletService(ICoreUnitOfWork coreUnitOfWork)
+        private readonly IBankRoutingService BankRoutingService;
+        public WalletService(
+            ICoreUnitOfWork coreUnitOfWork, 
+            IBankRoutingService bankRoutingService
+        )
         {
             CoreUnitOfWork = coreUnitOfWork;
+            BankRoutingService = bankRoutingService;
         }
 
 
@@ -25,6 +30,7 @@ namespace Core.ApplicationServices
 
             await CoreUnitOfWork.WalletRepository.Insert(wallet);
             await CoreUnitOfWork.SaveChangesAsync();
+
 
             return jmbg;
         }
@@ -85,6 +91,12 @@ namespace Core.ApplicationServices
             if (!Enum.IsDefined(typeof(BankType), bankType))
             {
                 throw new ArgumentException("Given BankType doesn't exist.");
+            }
+
+            var accountStatus = await BankRoutingService.CheckStatus(jmbg, pin, (BankType)bankType);
+            if (!accountStatus.Status)
+            {
+                throw new ArgumentException(accountStatus.ErrorCodes);
             }
         }
     }

@@ -1,7 +1,9 @@
 using Core.ApplicationServices;
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
+using Core.Domain.Services.Internal.BankRoutingService;
 using Core.Infrastructure.DataAccess.EfCoreDataAccess;
+using Core.Infrastructure.Services.BrankoBankServiceMock;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Threading.Tasks;
@@ -14,6 +16,7 @@ namespace Tests.ApplicationServicesTests
 
         private ICoreUnitOfWork CoreUnitOfWork;
         private CoreEfCoreDbContext DbContext;
+        private IBankRoutingService BankRoutingService;
 
         [TestInitialize]
         public void Setup()
@@ -21,11 +24,19 @@ namespace Tests.ApplicationServicesTests
             var dbContextFactory = new DbContextFactory();
             DbContext = dbContextFactory.CreateDbContext(new string[] { });
             CoreUnitOfWork = new CoreEfCoreUnitOfWork(DbContext);
+            var brankoBankService = new BrankoBankService();
+            BankRoutingService = new BankRoutingService(brankoBankService);
         }
 
         [TestCleanup()]
         public async Task Cleanup()
         {
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
+            if (wallet != null)
+            {
+                await CoreUnitOfWork.WalletRepository.Delete(wallet);
+                await CoreUnitOfWork.SaveChangesAsync();
+            }
             await DbContext.DisposeAsync();
             DbContext = null;
         }
@@ -36,10 +47,10 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
 
                 //Act
-                string walletId = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1111", "123456789876543210");
+                string walletId = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Assert
                 Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(walletId);
@@ -49,18 +60,12 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual("prezime", wallet.LastName, "LastName must be 'prezime'");
                 Assert.AreEqual("0605996781029", wallet.Jmbg, "Jmbg must be '0605996781029'");
                 Assert.AreEqual(BankType.BrankoBank, wallet.BankType, $"BankType must be '{BankType.BrankoBank}'");
-                Assert.AreEqual("1111", wallet.PIN, "PIN must be '1111'");
+                Assert.AreEqual("1234", wallet.PIN, "PIN must be '1234'");
                 Assert.AreEqual("123456789876543210", wallet.BankAccount, "BankAccount must be '123456789876543210'");
             }
             catch (Exception ex)
             {
                 Assert.Fail("Unexpected error: " + ex.Message);
-            }
-            finally
-            {
-                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
-                await CoreUnitOfWork.WalletRepository.Delete(wallet);
-                await CoreUnitOfWork.SaveChangesAsync();
             }
         }
 
@@ -70,23 +75,17 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork);
-                string walletId = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1111", "123456789876543210");
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
+                string walletId = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1111", "123456789876543210"), $"{ nameof(Wallet) } with jmbg '{walletId}' already exists!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"{ nameof(Wallet) } with jmbg '{walletId}' already exists!");
 
             }
             catch (Exception ex)
             {
                 Assert.Fail("Unexpected error: " + ex.Message);
-            }
-            finally
-            {
-                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
-                await CoreUnitOfWork.WalletRepository.Delete(wallet);
-                await CoreUnitOfWork.SaveChangesAsync();
             }
         }
 
@@ -96,11 +95,11 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605010781029", (short)BankType.BrankoBank, "1111", "123456789876543210"), $"Need to be older than 18 years old to open a wallet!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605010781029", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"Need to be older than 18 years old to open a wallet!");
 
             }
             catch (Exception ex)
@@ -116,10 +115,10 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996481029", (short)BankType.BrankoBank, "1111", "123456789876543210"), $"Need to be from Serbia to open a wallet!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996481029", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"Need to be from Serbia to open a wallet!");
 
             }
             catch (Exception ex)
@@ -134,10 +133,28 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "11111", "123456789876543210"), $"PIN needs to be 4 digits long!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "12345", "123456789876543210"), $"PIN needs to be 4 digits long!");
+
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public async Task CreateWalletBankStatusCheckFailTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
+                //Act
+                //Assert
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"Account not found for given jmbg and pin!");
 
             }
             catch (Exception ex)
