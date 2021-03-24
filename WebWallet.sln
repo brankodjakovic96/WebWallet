@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccess", "DataAccess", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{97BE0797-11A9-4EB8-A96A-48924A2F1305}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.EfCoreDataAccess", "Common\Common.EfCoreDataAccess\Common.EfCoreDataAccess.csproj", "{2ED6CA22-23C8-4D29-9E5D-541A80A2F3A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.EfCoreDataAccess", "Common\EfCoreDataAccess\Common.EfCoreDataAccess.csproj", "{2ED6CA22-23C8-4D29-9E5D-541A80A2F3A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Utils", "Common\Common.Utils\Common.Utils.csproj", "{6C37BD0C-AD85-4C41-90EA-E3A739B52F5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Utils", "Common\Utils\Common.Utils.csproj", "{6C37BD0C-AD85-4C41-90EA-E3A739B52F5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
