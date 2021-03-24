@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Common\Common.EfCoreDataAccess\Common.EfCoreDataAccess.csproj" />
+    <ProjectReference Include="..\..\..\Domain\Core.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
