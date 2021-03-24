@@ -11,6 +11,7 @@ namespace Core.Domain.Entities
         public string LastName { get; private set; }
         public string PIN { get; private set; }
         public string BankAccount { get; private set; }
+        public BankType BankType { get; set; }
         public decimal Ballance { get; set; }
         public IEnumerable<Transaction> Transactions { get; private set; }
         public DateTime LastTransactionDateTime { get; set; }
@@ -21,10 +22,12 @@ namespace Core.Domain.Entities
             Transactions = new List<Transaction>();
         }
 
-        public Wallet(string firstName, string lastName, string jmbg, string pin, string bankAccount)
+        public Wallet(string firstName, string lastName, string jmbg, BankType bankType, string pin, string bankAccount)
         {
             FirstName = firstName;
+            LastName = lastName;
             Jmbg = jmbg;
+            BankType = bankType;
             PIN = pin;
             BankAccount = bankAccount;
             Ballance = 0M;
