@@ -155,7 +155,7 @@ namespace Tests.ApplicationServicesTests
                 var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"Account not found for given jmbg and pin!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781027", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"Account not found for given jmbg and pin!");
 
             }
             catch (Exception ex)
