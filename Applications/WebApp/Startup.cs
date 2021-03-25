@@ -42,8 +42,9 @@ namespace Applications.WebWallet
             {
                 var coreUnitOfWork = serviceProvider.GetRequiredService<ICoreUnitOfWork>();
                 var bankRoutingService = serviceProvider.GetRequiredService<IBankRoutingService>();
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-                var walletService = new WalletService(coreUnitOfWork, bankRoutingService);
+                var walletService = new WalletService(coreUnitOfWork, bankRoutingService, configuration);
                 return walletService;
             });
             services.AddControllersWithViews();

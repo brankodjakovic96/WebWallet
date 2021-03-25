@@ -10,5 +10,7 @@ namespace Core.Domain.Services.Internal.BankRoutingService
     public interface IBankRoutingService
     {
         Task<BankResponse> CheckStatus(string jmbg, string pin, BankType bankType);
+        Task<BankResponse> Withdraw(string jmbg, string pin, decimal amount, BankType bankType);
+
     }
 }

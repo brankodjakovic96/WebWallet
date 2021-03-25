@@ -13,6 +13,7 @@ namespace Common.Utils
         Task<bool> Delete(TEntity entity);
         Task<TEntity> GetById(params object[] ids);
         Task<IReadOnlyCollection<TEntity>> GetFilteredList(Expression<Func<TEntity, bool>> filter);
+        Task<TEntity> GetFirstOrDefaultWithIncludes(Expression<Func<TEntity, bool>> filter, params Expression<Func<TEntity, object>>[] includePropertyExpressions);
 
     }
 }
