@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{E7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Infrastructure.Services.BrankoBankServiceMock", "Core\Infrastructure\Services\BrankoBankServiceMock\Core.Infrastructure.Services.BrankoBankServiceMock.csproj", "{B7314594-4884-4695-9AC6-BE48BADD91EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Applications.WebWallet", "Applications\WebWallet\Applications.WebWallet.csproj", "{F935C79F-EF43-4443-8E37-2BDC546A1885}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Applications.WebApp", "Applications\WebApp\Applications.WebApp.csproj", "{F935C79F-EF43-4443-8E37-2BDC546A1885}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

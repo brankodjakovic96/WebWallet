@@ -11,15 +11,15 @@ COPY ["Core/Infrastructure/DataAccess/EfCoreDataAccess/Core.Infrastructure.DataA
 
 COPY ["Core/Infrastructure/Services/BrankoBankServiceMock/Core.Infrastructure.Services.BrankoBankServiceMock.csproj", "Core/Infrastructure/Services/BrankoBankServiceMock/"]
 
-COPY ["Applications/WebWallet/Applications.WebWallet.csproj", "Applications/WebWallet/"]
+COPY ["Applications/WebApp/Applications.WebApp.csproj", "Applications/WebApp/"]
 
-RUN dotnet restore "Applications/WebWallet/Applications.WebWallet.csproj"
+RUN dotnet restore "Applications/WebApp/Applications.WebApp.csproj"
 COPY . .
-WORKDIR "/src/Applications/WebWallet"
-RUN dotnet build "Applications.WebWallet.csproj" -c Release -o /app/build
+WORKDIR "/src/Applications/WebApp"
+RUN dotnet build "Applications.WebApp.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Applications.WebWallet.csproj" -c Release -o /app/publish
+RUN dotnet publish "Applications.WebApp.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
@@ -27,4 +27,4 @@ COPY --from=publish /app/publish .
 
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-ENTRYPOINT ["dotnet", "Applications.WebWallet.dll"]
+ENTRYPOINT ["dotnet", "Applications.WebApp.dll"]

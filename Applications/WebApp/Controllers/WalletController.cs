@@ -30,6 +30,7 @@ namespace Applications.WebWallet.Controllers
             try
             {
                 password = await WalletService.CreateWallet(walletVM.FirstName, walletVM.LastName, walletVM.Jmbg, walletVM.BankType, walletVM.PIN, walletVM.BankAccount);
+                ModelState.Clear();
                 return View(new WalletVM() { Password = password });
             }
             catch(Exception ex)
