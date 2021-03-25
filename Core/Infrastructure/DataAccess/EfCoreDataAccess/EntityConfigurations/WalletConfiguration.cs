@@ -20,6 +20,9 @@ namespace Core.Infrastructure.DataAccess.EfCoreDataAccess.EntityConfigurations
             modelBuilder.Property(a => a.Ballance).HasPrecision(12, 2);
             modelBuilder.Property(a => a.UsedDepositThisMonth).HasPrecision(12, 2);
             modelBuilder.Property(a => a.UsedWithdrawThisMonth).HasPrecision(12, 2);
+            modelBuilder.Property("_password");
+            modelBuilder.Property("_password").HasMaxLength(6);
+
         }
     }
 }

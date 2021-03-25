@@ -1,0 +1,61 @@
+﻿@model WalletVM
+
+
+<div class="container">
+    <h1 style="margin-bottom:2vh;">New wallet</h1>
+    @if (ViewData["password"] != null)
+    {
+        <h2 style="margin-bottom:3vh;"> Password: @ViewData["password"]</h2>
+    }
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Create" asp-controller="Wallet" method="post">
+                <div class="form-group">
+                    <label class="control-label" asp-for="FirstName">First name:</label>
+                    <input class="form-control" asp-for="FirstName" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="LastName">Last name:</label>
+                    <input class="form-control" asp-for="LastName" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="Jmbg">Jmbg:</label>
+                    <input class="form-control" asp-for="Jmbg" />
+                    <span asp-validation-for="Jmbg" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="BankAccount">Bank account:</label>
+                    <input class="form-control" asp-for="BankAccount" />
+                    <span asp-validation-for="BankAccount" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="PIN">PIN:</label>
+                    <input type="password" class="form-control" asp-for="PIN" />
+                    <span asp-validation-for="PIN" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BankType" class="control-label">Bank:</label>
+                    <select asp-for="BankType" class="form-control" asp-items="Html.GetEnumSelectList<BankType>().Where(type => type.Value != 0.ToString())">
+                        <option selected>Please select</option>
+                    </select>
+                    <span asp-validation-for="BankType" class="text-danger"></span>
+                </div>
+
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -50,12 +50,13 @@ namespace Tests.ApplicationServicesTests
                 var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
 
                 //Act
-                string walletId = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Assert
-                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(walletId);
+                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
 
                 Assert.IsNotNull(wallet, "Wallet must not be null");
+                Assert.AreEqual(6, password.Length, "Password must be 6 characters long");
                 Assert.AreEqual("ime", wallet.FirstName, "FirstName must be 'ime'");
                 Assert.AreEqual("prezime", wallet.LastName, "LastName must be 'prezime'");
                 Assert.AreEqual("0605996781029", wallet.Jmbg, "Jmbg must be '0605996781029'");
@@ -76,11 +77,11 @@ namespace Tests.ApplicationServicesTests
             {
                 //Arrange
                 var walletService = new WalletService(CoreUnitOfWork, BankRoutingService);
-                string walletId = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"{ nameof(Wallet) } with jmbg '{walletId}' already exists!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210"), $"{ nameof(Wallet) } with jmbg '{0605996781029}' already exists!");
 
             }
             catch (Exception ex)

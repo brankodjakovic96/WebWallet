@@ -1,0 +1,22 @@
+version: '2.4'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:latest
+    container_name: wallet_mssql
+    hostname: wallet_mssql
+    ports:
+      - "1433:1433"
+    environment: 
+      SA_PASSWORD: "Krusevac037"
+      ACCEPT_EULA: "Y"
+    volumes: 
+      - "mssqldata:/var/lib/mssql"
+    networks: 
+      - wallet_network
+
+
+volumes: 
+  mssqldata:
+networks: 
+  wallet_network:

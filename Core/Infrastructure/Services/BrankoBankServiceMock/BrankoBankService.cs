@@ -13,7 +13,8 @@ namespace Core.Infrastructure.Services.BrankoBankServiceMock
         {
             Accounts = new Dictionary<string, decimal>()
             {
-                {  "0605996781029:1234", 1000000M }
+                { "0605996781029:1234", 1000000M },
+                { "0605996781028:1234", 100000M }
             };
         }
 
@@ -23,7 +24,7 @@ namespace Core.Infrastructure.Services.BrankoBankServiceMock
             var response = new BankResponse()
             {
                 Status = status,
-                ErrorCodes = status ? "" : "Account not found for given jmbg and pin!"
+                ErrorCodes = status ? "" : "Bank account not found for given jmbg and pin!"
             };
             return response;
         }

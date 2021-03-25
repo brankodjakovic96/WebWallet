@@ -1,4 +1,5 @@
-﻿using Core.Domain.Entities;
+﻿using Common.Utils;
+using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services.Internal.BankRoutingService;
 using System;
@@ -26,13 +27,14 @@ namespace Core.ApplicationServices
         public async Task<string> CreateWallet(string firstName, string lastName, string jmbg, short bankType, string pin, string bankAccount)
         {
             await ValidateWalletInput(jmbg, bankType, pin, bankAccount);
-            var wallet = new Wallet(firstName, lastName, jmbg, (BankType)bankType, pin, bankAccount);
+
+            var password = PasswordGenerator.Generate(6, 2);
+            var wallet = new Wallet(firstName, lastName, jmbg, (BankType)bankType, pin, bankAccount, password);
 
             await CoreUnitOfWork.WalletRepository.Insert(wallet);
             await CoreUnitOfWork.SaveChangesAsync();
 
-
-            return jmbg;
+            return password;
         }
 
 
@@ -54,9 +56,9 @@ namespace Core.ApplicationServices
             {
                 throw new ArgumentException("Jmbg has to be only made out of digits.");
             }
-            if (bankAccount.Length != 18)
+            if (bankAccount.Length > 18)
             {
-                throw new ArgumentException("BankAccount has to be 13 digits long.");
+                throw new ArgumentException("BankAccount has to be 18 or less digits long.");
             }
             if (bankAccount.Any(c => !char.IsDigit(c)))
             {
@@ -88,7 +90,7 @@ namespace Core.ApplicationServices
                 throw new ArgumentException("Wallet for that jmbg already exists.");
             }
 
-            if (!Enum.IsDefined(typeof(BankType), bankType))
+            if (!Enum.IsDefined(typeof(BankType), bankType) && (BankType)bankType != BankType.Undefined)
             {
                 throw new ArgumentException("Given BankType doesn't exist.");
             }
