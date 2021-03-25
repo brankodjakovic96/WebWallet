@@ -1,6 +1,21 @@
 version: '2.4'
 
 services:
+  web_wallet:
+    build:
+      context: .
+      dockerfile: ./Applications/WebWallet/Dockerfile
+    image: webwallet/wallet_webapp:0.1
+    container_name: wallet_webapp
+    hostname: wallet_webapp
+    ports: 
+      - "8020:80"
+    depends_on: 
+      mssql:
+        condition: service_healthy       
+    networks: 
+      - wallet_network
+
   mssql:
     image: mcr.microsoft.com/mssql/server:latest
     container_name: wallet_mssql
@@ -14,6 +29,13 @@ services:
       - "mssqldata:/var/lib/mssql"
     networks: 
       - wallet_network
+
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-U", "sa", "-P", "Krusevac037"]
+      interval: 20s
+      timeout: 10s
+      start_period: 5s
+      retries: 5
 
 
 volumes: 
