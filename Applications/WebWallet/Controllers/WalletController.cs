@@ -18,9 +18,8 @@ namespace Applications.WebWallet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create(string password)
+        public IActionResult Create()
         {
-            ViewData["password"] = password;
             return View();
         }
 
@@ -31,7 +30,7 @@ namespace Applications.WebWallet.Controllers
             try
             {
                 password = await WalletService.CreateWallet(walletVM.FirstName, walletVM.LastName, walletVM.Jmbg, walletVM.BankType, walletVM.PIN, walletVM.BankAccount);
-                return RedirectToAction("Create", "Wallet", new { password = password });
+                return View(new WalletVM() { Password = password });
             }
             catch(Exception ex)
             {
