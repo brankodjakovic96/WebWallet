@@ -19,8 +19,20 @@ namespace Core.Domain.Services.Internal.BankRoutingService
             switch (bankType)
             {
                 case BankType.BrankoBank:
-                    return await BrankoBankService.CheckStatus(jmbg, pin);
-                    break;
+                    var response = await BrankoBankService.CheckStatus(jmbg, pin);
+                    return response;
+                default:
+                    throw new ArgumentException("Bank type not supported!");
+            }
+        }
+
+        public async Task<BankResponse> Withdraw(string jmbg, string pin, decimal amount, BankType bankType)
+        {
+            switch (bankType)
+            {
+                case BankType.BrankoBank:
+                    var response = await BrankoBankService.Withdraw(jmbg, pin, amount);
+                    return response;
                 default:
                     throw new ArgumentException("Bank type not supported!");
             }

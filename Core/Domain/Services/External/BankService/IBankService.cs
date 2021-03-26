@@ -9,5 +9,6 @@ namespace Core.Domain.Services.External.BankService
     public interface IBankService
     {
         Task<BankResponse> CheckStatus(string jmbg, string pin);
+        Task<BankResponse> Withdraw(string jmbg, string pin, decimal amount);
     }
 }

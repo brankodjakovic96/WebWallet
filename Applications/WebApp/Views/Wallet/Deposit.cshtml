@@ -1,0 +1,75 @@
+﻿@model WalletDepositVM
+
+
+
+
+<div class="container">
+    <h1 style="margin-bottom:2vh;">Deposit</h1>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Deposit" asp-controller="Wallet" method="post">
+                <div class="form-group">
+                    <label class="control-label" asp-for="Jmbg">Jmbg:</label>
+                    <input class="form-control" asp-for="Jmbg" />
+                    <span asp-validation-for="Jmbg" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="Password">Password:</label>
+                    <input type="password" class="form-control" asp-for="Password" autocomplete="off" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="Amount">Amount:</label>
+                    <input id="DepositAmount" class="form-control" pattern="^\d*(\.\d{0,2})?$" asp-format="{0:0.##}" asp-for="Amount" min="1" max="9999999999" autocomplete="off" />
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+                <input type="submit" value="Deposit" class="btn btn-primary" />
+            </form>
+        </div>
+    </div>
+</div>
+
+<div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+    <!-- Then put toasts within -->
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false">
+        <div class="toast-header">
+            <strong id="toastHeader" class="mr-auto">Success</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div id="toastContent" class="toast-body">
+            Successfuly deposited
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/deposit.js"></script>
+    @if (ViewData["IsSuccessful"] != null && ViewData["IsSuccessful"].ToString() == "yes")
+    {
+        <script>
+
+            $(document).ready(function () {
+                $('.toast').toast('show');
+            });
+        </script>
+    }
+    @if (ViewData["IsSuccessful"] != null && ViewData["IsSuccessful"].ToString() == "no")
+    {
+        <script>
+            $(document).ready(function () {
+                $('#toastHeader').text("Failed");
+                $('#toastContent').html('@ViewData["ErrorMessage"]');
+                $('.toast').toast('show');
+            });
+        </script>
+    }
+}

@@ -2,8 +2,10 @@
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services.Internal.BankRoutingService;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,13 +16,60 @@ namespace Core.ApplicationServices
     {
         private readonly ICoreUnitOfWork CoreUnitOfWork;
         private readonly IBankRoutingService BankRoutingService;
+        private readonly IConfiguration Configuration;
         public WalletService(
             ICoreUnitOfWork coreUnitOfWork, 
-            IBankRoutingService bankRoutingService
+            IBankRoutingService bankRoutingService,
+            IConfiguration configuration
         )
         {
             CoreUnitOfWork = coreUnitOfWork;
             BankRoutingService = bankRoutingService;
+            Configuration = configuration;
+        }
+
+        public async Task Deposit(string jmbg, string password, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be higher than 0 RSD.");
+            }
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
+                    wallet => wallet.Jmbg == jmbg,
+                    wallet => wallet.Transactions
+                );
+            if (wallet == null || !wallet.CheckPassword(password))
+            {
+                throw new ArgumentException("No wallet for that jmbg and password pair.");
+            }
+
+            decimal maximalDeposit;
+            bool success = decimal.TryParse(Configuration["MaximalDeposit"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalDeposit);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["MaximalDeposit"]} (MaximalDeposit) to decimal");
+            }
+
+            await CoreUnitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                wallet.PayIn(amount, TransactionType.Deposit, wallet.BankType.ToString(), maximalDeposit);
+                await CoreUnitOfWork.WalletRepository.Update(wallet);
+                await CoreUnitOfWork.SaveChangesAsync();
+                var withdrawResponse = await BankRoutingService.Withdraw(jmbg, wallet.PIN, amount, wallet.BankType);
+                if (!withdrawResponse.Status)
+                {
+                    throw new InvalidOperationException(withdrawResponse.ErrorCodes);
+                }
+
+                await CoreUnitOfWork.CommitTransactionAsync();
+            }
+            catch (InvalidOperationException ex)
+            {
+                await CoreUnitOfWork.RollbackTransactionAsync();
+                throw ex;
+            }
         }
 
 

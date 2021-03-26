@@ -12,13 +12,16 @@ namespace Core.Domain.Entities
         public string Source { get; private set; }
         public string Destination { get; private set; }
         public DateTime TransactionDateTime { get; private set; }
+        public string WalletJmbg { get; set; }
+        public Wallet Wallet { get; set; }
         public Transaction()
         {
 
         }
 
-        public Transaction(decimal amount, TransactionType type, string source, string destination)
+        public Transaction(Wallet wallet, decimal amount, TransactionType type, string source, string destination)
         {
+            Wallet = wallet;
             Amount = amount;
             Type = type;
             Source = source;

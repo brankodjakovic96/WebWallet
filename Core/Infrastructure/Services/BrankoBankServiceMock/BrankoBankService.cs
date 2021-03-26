@@ -28,5 +28,29 @@ namespace Core.Infrastructure.Services.BrankoBankServiceMock
             };
             return response;
         }
+
+        public async Task<BankResponse> Withdraw(string jmbg, string pin, decimal amount)
+        {
+            decimal balance;
+            var status = Accounts.TryGetValue($"{jmbg}:{pin}", out balance);
+            string error = "";
+            if (!status)
+            {
+                error = "Bank account not found for given jmbg and pin!";
+            }
+            else if (balance < amount)
+            {
+                status = false;
+                error = "Bank account doesn't have enoguh funds!";
+            }
+            
+            var response = new BankResponse()
+            {
+                Status = status,
+                ErrorCodes = error
+            };
+
+            return response;
+        }
     }
 }

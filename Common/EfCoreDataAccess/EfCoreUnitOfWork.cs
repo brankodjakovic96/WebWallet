@@ -27,9 +27,11 @@ namespace Common.EfCoreDataAccess
             return Transaction.CommitAsync();
         }
 
-        public Task RollbackTransactionAsync()
+        public async Task RollbackTransactionAsync()
         {
-            return Transaction.RollbackAsync();
+            await Transaction.RollbackAsync();
+            Transaction?.Dispose();
+            Transaction = null;
         }
 
         public async Task SaveChangesAsync()
@@ -79,6 +81,12 @@ namespace Common.EfCoreDataAccess
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
+
+        public void ClearTracking()
+        {
+            Context.ChangeTracker.Clear();
+        }
+
 
         #endregion IDisposable implementation
     }

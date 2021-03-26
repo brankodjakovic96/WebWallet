@@ -56,6 +56,17 @@ namespace Common.EfCoreDataAccess
             return await DbSet.Where(filter).ToListAsync();
         }
 
+        public async Task<TEntity> GetFirstOrDefaultWithIncludes(Expression<Func<TEntity, bool>> filter, params Expression<Func<TEntity, object>>[] includePropertyExpressions)
+        {
+            return await AddMultipleIncludesToQuery(DbSet, includePropertyExpressions)
+                .FirstOrDefaultAsync(filter);
+        }
+
+        protected IQueryable<TEntity> AddMultipleIncludesToQuery(IQueryable<TEntity> initialQuery, params Expression<Func<TEntity, object>>[] includePropertyExpressions)
+        {
+            IQueryable<TEntity> queryWithIncludes = includePropertyExpressions.Aggregate(initialQuery, (currentQuery, includeExpression) => currentQuery.Include(includeExpression));
+            return queryWithIncludes;
+        }
         public void Dispose()
         {
             _context.Dispose();
