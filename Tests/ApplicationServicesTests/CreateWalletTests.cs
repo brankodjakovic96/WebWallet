@@ -44,6 +44,13 @@ namespace Tests.ApplicationServicesTests
         [TestCleanup()]
         public async Task Cleanup()
         {
+            CoreUnitOfWork.ClearTracking();
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
+            if (wallet != null)
+            {
+                await CoreUnitOfWork.WalletRepository.Delete(wallet);
+                await CoreUnitOfWork.SaveChangesAsync();
+            }
             await DbContext.DisposeAsync();
             DbContext = null;
         }
@@ -77,12 +84,7 @@ namespace Tests.ApplicationServicesTests
             }
             finally
             {
-                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
-                if (wallet != null)
-                {
-                    await CoreUnitOfWork.WalletRepository.Delete(wallet);
-                    await CoreUnitOfWork.SaveChangesAsync();
-                }
+                
             }
         }
 

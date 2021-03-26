@@ -30,6 +30,10 @@ namespace Core.ApplicationServices
 
         public async Task Deposit(string jmbg, string password, decimal amount)
         {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be higher than 0 RSD.");
+            }
             Wallet wallet = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
                     wallet => wallet.Jmbg == jmbg,
                     wallet => wallet.Transactions

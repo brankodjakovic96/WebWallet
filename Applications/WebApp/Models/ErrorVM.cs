@@ -1,6 +1,6 @@
 using System;
 
-namespace Applications.WebWallet.Models
+namespace Applications.WebApp.Models
 {
     public class ErrorVM
     {

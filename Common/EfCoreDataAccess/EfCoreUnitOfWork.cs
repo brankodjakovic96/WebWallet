@@ -82,6 +82,11 @@ namespace Common.EfCoreDataAccess
             Dispose(true);
         }
 
+        public void ClearTracking()
+        {
+            Context.ChangeTracker.Clear();
+        }
+
 
         #endregion IDisposable implementation
     }

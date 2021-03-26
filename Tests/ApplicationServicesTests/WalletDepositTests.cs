@@ -38,8 +38,13 @@ namespace Tests.ApplicationServicesTests
 
             Configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings)
-                .Build();
+                .Build();          
+        }
 
+        [TestCleanup()]
+        public async Task Cleanup()
+        {
+            CoreUnitOfWork.ClearTracking();
             Wallet wallet = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
                     wallet => wallet.Jmbg == "0605996781029",
                     wallet => wallet.Transactions
@@ -50,11 +55,6 @@ namespace Tests.ApplicationServicesTests
                 await CoreUnitOfWork.WalletRepository.Delete(wallet);
                 await CoreUnitOfWork.SaveChangesAsync();
             }
-        }
-
-        [TestCleanup()]
-        public async Task Cleanup()
-        {
             await DbContext.DisposeAsync();
             DbContext = null;            
         }
@@ -122,6 +122,25 @@ namespace Tests.ApplicationServicesTests
                 //Act
                 //Assert
                 await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Deposit("0605996781029", password, 1100000M), "Bank account doesn't have enoguh funds!");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public async Task WalletDepositAccountDoesntExistFailTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+
+                //Act
+                //Assert
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Deposit("0605996781028", password, 1100000M), $"Account not found for given jmbg and pin!");
             }
             catch (Exception ex)
             {

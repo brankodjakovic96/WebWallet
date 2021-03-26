@@ -1,4 +1,4 @@
-﻿using Applications.WebWallet.Models;
+﻿using Applications.WebApp.Models;
 using Core.ApplicationServices;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Applications.WebWallet.Controllers
+namespace Applications.WebApp.Controllers
 {
     public class WalletController : Controller
     {
@@ -36,6 +36,31 @@ namespace Applications.WebWallet.Controllers
             catch(Exception ex)
             {
                 return RedirectToAction("Error", "Home", new { Message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Deposit()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Deposit(WalletDepositVM walletDepositVM)
+        {
+            try
+            {
+                await WalletService.Deposit(walletDepositVM.Jmbg, walletDepositVM.Password, walletDepositVM.Amount);
+                ModelState.Clear();
+                ViewData["IsSuccessful"] = "yes";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
             }
         }
     }

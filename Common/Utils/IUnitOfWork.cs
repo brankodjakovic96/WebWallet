@@ -9,5 +9,6 @@ namespace Common.Utils
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
         Task SaveChangesAsync();
+        void ClearTracking();
     }
 }
