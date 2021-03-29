@@ -10,5 +10,7 @@ namespace Core.Domain.Services.External.BankService
     {
         Task<BankResponse> CheckStatus(string jmbg, string pin);
         Task<BankResponse> Withdraw(string jmbg, string pin, decimal amount);
+        Task<BankResponse> Deposit(string jmbg, string pin, decimal amount);
+
     }
 }
