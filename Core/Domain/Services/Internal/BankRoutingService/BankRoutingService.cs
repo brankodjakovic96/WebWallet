@@ -37,5 +37,17 @@ namespace Core.Domain.Services.Internal.BankRoutingService
                     throw new ArgumentException("Bank type not supported!");
             }
         }
+
+        public async Task<BankResponse> Deposit(string jmbg, string pin, decimal amount, BankType bankType)
+        {
+            switch (bankType)
+            {
+                case BankType.BrankoBank:
+                    var response = await BrankoBankService.Deposit(jmbg, pin, amount);
+                    return response;
+                default:
+                    throw new ArgumentException("Bank type not supported!");
+            }
+        }
     }
 }

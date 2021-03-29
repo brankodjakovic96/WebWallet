@@ -29,6 +29,21 @@ namespace Core.Infrastructure.Services.BrankoBankServiceMock
             return response;
         }
 
+        public async Task<BankResponse> Deposit(string jmbg, string pin, decimal amount)
+        {
+            var status = Accounts.ContainsKey($"{jmbg}:{pin}");
+            if(status)
+            {
+                Accounts[$"{jmbg}:{pin}"] += amount;
+            }
+            var response = new BankResponse()
+            {
+                Status = status,
+                ErrorCodes = status ? "" : "Bank account not found for given jmbg and pin!"
+            };
+            return response;
+        }
+
         public async Task<BankResponse> Withdraw(string jmbg, string pin, decimal amount)
         {
             decimal balance;
@@ -43,7 +58,11 @@ namespace Core.Infrastructure.Services.BrankoBankServiceMock
                 status = false;
                 error = "Bank account doesn't have enoguh funds!";
             }
-            
+            else
+            {
+                Accounts[$"{jmbg}:{pin}"] -= amount;
+            }
+
             var response = new BankResponse()
             {
                 Status = status,

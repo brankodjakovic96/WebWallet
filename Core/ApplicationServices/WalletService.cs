@@ -73,6 +73,52 @@ namespace Core.ApplicationServices
         }
 
 
+        public async Task Withdraw(string jmbg, string password, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be higher than 0 RSD.");
+            }
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
+                    wallet => wallet.Jmbg == jmbg,
+                    wallet => wallet.Transactions
+                );
+            if (wallet == null || !wallet.CheckPassword(password))
+            {
+                throw new ArgumentException("No wallet for that jmbg and password pair.");
+            }
+
+            decimal maximalWithdraw;
+            bool success = decimal.TryParse(Configuration["MaximalWithdraw"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalWithdraw);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["MaximalWithdraw"]} (MaximalWithdraw) to decimal");
+            }
+
+            await CoreUnitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                wallet.PayOut(amount, TransactionType.Withdraw, wallet.BankType.ToString(), maximalWithdraw);
+                await CoreUnitOfWork.WalletRepository.Update(wallet);
+                await CoreUnitOfWork.SaveChangesAsync();
+                var withdrawResponse = await BankRoutingService.Deposit(jmbg, wallet.PIN, amount, wallet.BankType);
+                if (!withdrawResponse.Status)
+                {
+                    throw new InvalidOperationException(withdrawResponse.ErrorCodes);
+                }
+
+                await CoreUnitOfWork.CommitTransactionAsync();
+            }
+            catch (InvalidOperationException ex)
+            {
+                await CoreUnitOfWork.RollbackTransactionAsync();
+                throw ex;
+            }
+        }
+
+
+
         public async Task<string> CreateWallet(string firstName, string lastName, string jmbg, short bankType, string pin, string bankAccount)
         {
             await ValidateWalletInput(jmbg, bankType, pin, bankAccount);
