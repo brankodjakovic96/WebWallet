@@ -1,15 +1,13 @@
-﻿@model WalletDepositVM
+﻿@model WalletWithdrawVM
 
 
 
 
 <div class="container">
-    <h1 style="margin-bottom:2vh;">Deposit</h1>
-
-
+    <h1 style="margin-bottom:2vh;">Withdraw</h1>
     <div class="row">
         <div class="col-md-6">
-            <form asp-action="Deposit" asp-controller="Wallet" method="post">
+            <form asp-action="Withdraw" asp-controller="Wallet" method="post">
                 <div class="form-group">
                     <label class="control-label" asp-for="Jmbg">Jmbg:</label>
                     <input class="form-control" asp-for="Jmbg" />
@@ -27,7 +25,7 @@
                     <input id="Amount" class="form-control" pattern="^\d*(\.\d{0,2})?$" asp-format="{0:0.##}" asp-for="Amount" min="1" max="9999999999" autocomplete="off" />
                     <span asp-validation-for="Amount" class="text-danger"></span>
                 </div>
-                <input type="submit" value="Deposit" class="btn btn-primary" />
+                <input type="submit" value="Withdraw" class="btn btn-primary" />
             </form>
         </div>
     </div>
@@ -47,7 +45,6 @@
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     @{

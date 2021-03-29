@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace Tests.ApplicationServicesTests
 {
     [TestClass]
-    public class WalletDepositTests
+    public class WalletWithdrawTests
     {
         private ICoreUnitOfWork CoreUnitOfWork;
         private CoreEfCoreDbContext DbContext;
@@ -38,7 +38,7 @@ namespace Tests.ApplicationServicesTests
 
             Configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings)
-                .Build();          
+                .Build();
         }
 
         [TestCleanup()]
@@ -56,30 +56,30 @@ namespace Tests.ApplicationServicesTests
                 await CoreUnitOfWork.SaveChangesAsync();
             }
             await DbContext.DisposeAsync();
-            DbContext = null;            
+            DbContext = null;
         }
 
 
         [TestMethod]
-        public async Task WalletDepositSuccessTest()
+        public async Task WalletWithdrawSuccessTest()
         {
             try
             {
                 //Arrange
                 var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                await walletService.Deposit("0605996781029", password, 110000M);
 
                 //Act
-                await walletService.Deposit("0605996781029", password, 100000M);
+                await walletService.Withdraw("0605996781029", password, 100000M);
 
                 //Assert
                 Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
 
-                Assert.AreEqual(100000M, wallet.Balance, "Wallet balance must be 100000");
-                Assert.AreEqual(1, wallet.Transactions.Count(), $"A transaction must exist on the wallet.");
-                Assert.AreEqual(TransactionType.Deposit, wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Deposit).Type, $"A transaction of type {TransactionType.Deposit} must exist on the wallet.");
-                Assert.AreEqual(BankType.BrankoBank.ToString(), wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Deposit).Source, $"Source of the transaction should be {BankType.BrankoBank}.");
-                Assert.AreEqual("0605996781029", wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Deposit).Destination, $"Destination of the transaction should be 0605996781029.");
+                Assert.AreEqual(10000M, wallet.Balance, "Wallet balance must be 10000");
+                Assert.AreEqual(TransactionType.Withdraw, wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Type, $"A transaction of type {TransactionType.Withdraw} must exist on the wallet.");
+                Assert.AreEqual(BankType.BrankoBank.ToString(), wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Destination, $"Source of the transaction should be {BankType.BrankoBank}.");
+                Assert.AreEqual("0605996781029", wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Source, $"Destination of the transaction should be 0605996781029.");
 
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace Tests.ApplicationServicesTests
 
 
         [TestMethod]
-        public async Task WalletDepositMoreThanMaximumFailTest()
+        public async Task WalletWithdrawMoreThanMaximumFailTest()
         {
             try
             {
@@ -100,18 +100,18 @@ namespace Tests.ApplicationServicesTests
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Deposit("0605996781029", password, 2600000M), $"Transaction would exceed wallet (0605996781029) monthly deposit limit ({Configuration["MaximalDeposit"]} RSD).");
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Withdraw("0605996781029", password, 2600000M), $"Transaction would exceed wallet (0605996781029) monthly withdrawal limit ({Configuration["MaximalWithdraw"]} RSD).");
             }
             catch (Exception ex)
             {
                 Assert.Fail("Unexpected error: " + ex.Message);
             }
-           
+
         }
 
 
         [TestMethod]
-        public async Task WalletDepositNotEnoughFundsInBankFailTest()
+        public async Task WalletWithdrawNotEnoughFundsOnWalletFailTest()
         {
             try
             {
@@ -121,7 +121,7 @@ namespace Tests.ApplicationServicesTests
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Deposit("0605996781029", password, 1100000M), "Bank account doesn't have enoguh funds!");
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Withdraw("0605996781029", password, 1100000M), "Bank account doesn't have enoguh funds!");
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace Tests.ApplicationServicesTests
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Deposit("0605996781028", password, 1100000M), $"Account not found for given jmbg and pin!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Withdraw("0605996781028", password, 1100000M), $"Account not found for given jmbg and pin!");
             }
             catch (Exception ex)
             {

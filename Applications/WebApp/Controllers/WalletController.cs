@@ -63,5 +63,30 @@ namespace Applications.WebApp.Controllers
                 return View();
             }
         }
+
+        [HttpGet]
+        public IActionResult Withdraw()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Withdraw(WalletWithdrawVM walletWithdrawVM)
+        {
+            try
+            {
+                await WalletService.Withdraw(walletWithdrawVM.Jmbg, walletWithdrawVM.Password, walletWithdrawVM.Amount);
+                ModelState.Clear();
+                ViewData["IsSuccessful"] = "yes";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
+            }
+        }
     }
 }

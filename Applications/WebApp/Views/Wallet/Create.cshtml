@@ -5,7 +5,7 @@
     <h1 style="margin-bottom:2vh;">New wallet</h1>
     @if (Model?.Password != null)
     {
-        <h2 style="margin-bottom:3vh;"> Password: @Model.Password</h2>
+        <h2 style="margin-bottom:3vh;"> Password: <input disabled="disabled" value="@Model.Password" class="col-md-2"></h2>
     }
     <div class="row">
         <div class="col-md-6">

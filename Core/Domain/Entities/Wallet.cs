@@ -74,12 +74,12 @@ namespace Core.Domain.Entities
             {
                 throw new InvalidOperationException($"Transaction would exceed wallet ({Jmbg}) monthly withdraw limit ({maximalWithdraw} RSD).");
             }
-
-            Balance -= amount;
-            if (Balance < 0)
+            if (Balance - amount < 0)
             {
                 throw new InvalidOperationException($"Transaction would put wallet ({Jmbg}) Balance under 0.00 RSD).");
             }
+            Balance -= amount;
+
             if (LastTransactionDateTime.Month != DateTime.Now.Month || LastTransactionDateTime.Year != DateTime.Now.Year)
             {
                 UsedDepositThisMonth = 0M;
