@@ -35,7 +35,10 @@ namespace Applications.WebApp.Controllers
             }
             catch(Exception ex)
             {
-                return RedirectToAction("Error", "Home", new { Message = ex.Message });
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
             }
         }
 
@@ -76,6 +79,31 @@ namespace Applications.WebApp.Controllers
             try
             {
                 await WalletService.Withdraw(walletWithdrawVM.Jmbg, walletWithdrawVM.Password, walletWithdrawVM.Amount);
+                ModelState.Clear();
+                ViewData["IsSuccessful"] = "yes";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Transfer()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Transfer(WalletTransferVM walletTransferVM)
+        {
+            try
+            {
+                await WalletService.Transfer(walletTransferVM.JmbgFrom , walletTransferVM.PasswordFrom, walletTransferVM.JmbgTo, walletTransferVM.Amount);
                 ModelState.Clear();
                 ViewData["IsSuccessful"] = "yes";
                 return View();

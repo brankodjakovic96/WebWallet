@@ -28,6 +28,75 @@ namespace Core.ApplicationServices
             Configuration = configuration;
         }
 
+
+        public async Task Transfer(string sourceJmbg, string sourcePassword, string desitnationJmbg, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be higher than 0 RSD.");
+            }
+            Wallet walletSource = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
+                    wallet => wallet.Jmbg == sourceJmbg,
+                    wallet => wallet.Transactions
+                );
+            if (walletSource == null || !walletSource.CheckPassword(sourcePassword))
+            {
+                throw new ArgumentException($"No wallet for entered jmbg '{sourceJmbg}' and password pair.");
+            }
+
+            Wallet walletDestination = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
+                    wallet => wallet.Jmbg == desitnationJmbg,
+                    wallet => wallet.Transactions
+                );
+            if (walletDestination == null)
+            {
+                throw new ArgumentException($"No wallet for jmbg '{desitnationJmbg}'.");
+            }
+
+            decimal maximalDeposit;
+            decimal maximalWithdraw;
+            bool success = decimal.TryParse(Configuration["MaximalDeposit"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalDeposit);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["MaximalDeposit"]} (MaximalDeposit) to decimal");
+            }
+            success = decimal.TryParse(Configuration["MaximalWithdraw"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalWithdraw);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["MaximalWithdraw"]} (MaximalWithdraw) to decimal");
+            }
+            //TODO - PROVIZIJA
+            decimal fee = 0;
+
+            await CoreUnitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                walletSource.PayOut(amount, TransactionType.TransferPayOut, desitnationJmbg, maximalWithdraw);
+                await CoreUnitOfWork.WalletRepository.Update(walletSource);
+                await CoreUnitOfWork.SaveChangesAsync();
+
+                //TODO - PROVIZIJA
+                if (fee > 0)
+                {
+                    walletSource.PayOut(0, TransactionType.FeePayOut, "System", maximalWithdraw);
+                    await CoreUnitOfWork.WalletRepository.Update(walletSource);
+                    await CoreUnitOfWork.SaveChangesAsync();
+                }
+
+                walletDestination.PayIn(amount, TransactionType.TransferPayIn, sourceJmbg, maximalDeposit);
+                await CoreUnitOfWork.WalletRepository.Update(walletDestination);
+                await CoreUnitOfWork.SaveChangesAsync();
+
+                await CoreUnitOfWork.CommitTransactionAsync();
+            }
+            catch (InvalidOperationException ex)
+            {
+                await CoreUnitOfWork.RollbackTransactionAsync();
+                throw ex;
+            }
+        }
+
         public async Task Deposit(string jmbg, string password, decimal amount)
         {
             if (amount <= 0)
@@ -40,7 +109,7 @@ namespace Core.ApplicationServices
                 );
             if (wallet == null || !wallet.CheckPassword(password))
             {
-                throw new ArgumentException("No wallet for that jmbg and password pair.");
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
             }
 
             decimal maximalDeposit;
@@ -85,7 +154,7 @@ namespace Core.ApplicationServices
                 );
             if (wallet == null || !wallet.CheckPassword(password))
             {
-                throw new ArgumentException("No wallet for that jmbg and password pair.");
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
             }
 
             decimal maximalWithdraw;
