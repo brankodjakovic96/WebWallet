@@ -12,13 +12,13 @@
             <form asp-action="Transfer" asp-controller="Wallet" method="post">
                 <div class="form-group">
                     <label class="control-label" asp-for="JmbgFrom">Jmbg from:</label>
-                    <input class="form-control" asp-for="JmbgFrom" />
+                    <input class="form-control" asp-for="JmbgFrom" onchange="CalculateFee()"/>
                     <span asp-validation-for="JmbgFrom" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label" asp-for="PasswordFrom">Password:</label>
-                    <input type="password" class="form-control" asp-for="PasswordFrom" autocomplete="off" />
+                    <input type="password" class="form-control" asp-for="PasswordFrom" autocomplete="off" onchange="CalculateFee()"/>
                     <span asp-validation-for="PasswordFrom" class="text-danger"></span>
                 </div>
 
@@ -30,9 +30,15 @@
 
                 <div class="form-group">
                     <label class="control-label" asp-for="Amount">Amount:</label>
-                    <input id="Amount" class="form-control" pattern="^\d*(\.\d{0,2})?$" asp-format="{0:0.##}" asp-for="Amount" min="1" max="9999999999" autocomplete="off" />
+                    <input id="TransferAmount" class="form-control" pattern="^\d*(\.\d{0,2})?$" asp-format="{0:0.##}" asp-for="Amount" min="1" max="9999999999" autocomplete="off" />
                     <span asp-validation-for="Amount" class="text-danger"></span>
                 </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="Fee">Fee:</label>
+                    <input id="Fee" class="form-control" asp-format="{0:0.##}" asp-for="Fee" max="9999999999" autocomplete="off" disabled="disabled"/>
+                    <span asp-validation-for="Fee" class="text-danger"></span>
+                </div> 
                 <input type="submit" value="Transfer" class="btn btn-primary" />
             </form>
         </div>
