@@ -4,14 +4,16 @@ using Core.Infrastructure.DataAccess.EfCoreDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Core.Infrastructure.DataAccess.EfCoreDataAccess.Migrations
 {
     [DbContext(typeof(CoreEfCoreDbContext))]
-    partial class CoreEfCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210330150745_Added_WalletCreatedDateTime_And_LastTransferDateTime_To_Wallet")]
+    partial class Added_WalletCreatedDateTime_And_LastTransferDateTime_To_Wallet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

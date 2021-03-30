@@ -20,6 +20,9 @@ namespace Core.Infrastructure.DataAccess.EfCoreDataAccess.EntityConfigurations
             modelBuilder.Property(a => a.Balance).HasPrecision(12, 2);
             modelBuilder.Property(a => a.UsedDepositThisMonth).HasPrecision(12, 2);
             modelBuilder.Property(a => a.UsedWithdrawThisMonth).HasPrecision(12, 2);
+            modelBuilder.Property(a => a.WalletCreatedDateTime).HasColumnType("datetime2");
+            modelBuilder.Property(a => a.LastTransactionDateTime).HasColumnType("datetime2");
+            modelBuilder.Property(a => a.LastTransferDateTime).HasColumnType("datetime2");
             modelBuilder.Property("_password");
             modelBuilder.Property("_password").HasMaxLength(6);
             modelBuilder.Property(a => a.RowVersion).IsRowVersion();

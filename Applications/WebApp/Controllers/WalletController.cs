@@ -116,5 +116,20 @@ namespace Applications.WebApp.Controllers
                 return View();
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CalculateFee([FromBody] CalculateFeeVM calculateFeeVM)
+        {
+            try
+            {
+                decimal fee = await WalletService.CalculateTransferFee(calculateFeeVM.Jmbg, calculateFeeVM.Password, calculateFeeVM.Amount);
+                return Ok(fee);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { errorMessage = ex.Message });
+            }
+        }
+
     }
 }

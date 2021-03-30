@@ -2,6 +2,7 @@
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services.Internal.BankRoutingService;
+using Core.Domain.Services.Internal.FeeService;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -17,17 +18,77 @@ namespace Core.ApplicationServices
         private readonly ICoreUnitOfWork CoreUnitOfWork;
         private readonly IBankRoutingService BankRoutingService;
         private readonly IConfiguration Configuration;
+        private readonly IFeeService FeeService;
         public WalletService(
-            ICoreUnitOfWork coreUnitOfWork, 
+            ICoreUnitOfWork coreUnitOfWork,
             IBankRoutingService bankRoutingService,
-            IConfiguration configuration
+            IConfiguration configuration,
+            IFeeService feeService
         )
         {
             CoreUnitOfWork = coreUnitOfWork;
             BankRoutingService = bankRoutingService;
             Configuration = configuration;
+            FeeService = feeService;
         }
 
+        public async Task<decimal> CalculateTransferFee(string jmbg, string password, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be higher than 0 RSD.");
+            }
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(jmbg);
+            if (wallet == null || !wallet.CheckPassword(password))
+            {
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
+            }
+
+            decimal fee = CalculateFee(wallet, amount);
+            return fee;
+        }
+
+        private decimal CalculateFee(Wallet wallet, decimal amount)
+        {
+            decimal fixedFeeLimit;
+            decimal fixedFee;
+            decimal percentageFee;
+            int numberOfDaysAfterCreationWithNoFee;
+            bool firstTransactionFreeEachMonth;
+
+            bool success = decimal.TryParse(Configuration["FixedFeeLimit"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out fixedFeeLimit);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["FixedFeeLimit"]} (FixedFeeLimit) to decimal");
+            }
+
+            success = decimal.TryParse(Configuration["FixedFee"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out fixedFee);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["FixedFee"]} (FixedFee) to decimal");
+            }
+
+            success = decimal.TryParse(Configuration["PercentageFee"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out percentageFee);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["PercentageFee"]} (PercentageFee) to decimal");
+            }
+
+            success = bool.TryParse(Configuration["FirstTransactionFreeEachMonth"], out firstTransactionFreeEachMonth);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["FirstTransactionFreeEachMonth"]} (FirstTransactionFreeEachMonth) to bool");
+            }
+
+            success = int.TryParse(Configuration["NumberOfDaysAfterCreationWithNoFee"], out numberOfDaysAfterCreationWithNoFee);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["NumberOfDaysAfterCreationWithNoFee"]} (NumberOfDaysAfterCreationWithNoFee) to int");
+            }
+
+            decimal fee = FeeService.CalculateFee(numberOfDaysAfterCreationWithNoFee, firstTransactionFreeEachMonth, fixedFeeLimit, fixedFee, percentageFee, wallet, amount);
+            return fee;
+        }
 
         public async Task Transfer(string sourceJmbg, string sourcePassword, string desitnationJmbg, decimal amount)
         {
@@ -65,8 +126,8 @@ namespace Core.ApplicationServices
             {
                 throw new ArgumentException($"Couldn't cast {Configuration["MaximalWithdraw"]} (MaximalWithdraw) to decimal");
             }
-            //TODO - PROVIZIJA
-            decimal fee = 0;
+
+            decimal fee = CalculateFee(walletSource, amount);
 
             await CoreUnitOfWork.BeginTransactionAsync();
 
@@ -76,10 +137,9 @@ namespace Core.ApplicationServices
                 await CoreUnitOfWork.WalletRepository.Update(walletSource);
                 await CoreUnitOfWork.SaveChangesAsync();
 
-                //TODO - PROVIZIJA
                 if (fee > 0)
                 {
-                    walletSource.PayOut(0, TransactionType.FeePayOut, "System", maximalWithdraw);
+                    walletSource.PayOut(fee, TransactionType.FeePayOut, "System", maximalWithdraw);
                     await CoreUnitOfWork.WalletRepository.Update(walletSource);
                     await CoreUnitOfWork.SaveChangesAsync();
                 }
@@ -141,7 +201,6 @@ namespace Core.ApplicationServices
             }
         }
 
-
         public async Task Withdraw(string jmbg, string password, decimal amount)
         {
             if (amount <= 0)
@@ -186,8 +245,6 @@ namespace Core.ApplicationServices
             }
         }
 
-
-
         public async Task<string> CreateWallet(string firstName, string lastName, string jmbg, short bankType, string pin, string bankAccount)
         {
             await ValidateWalletInput(jmbg, bankType, pin, bankAccount);
@@ -200,7 +257,6 @@ namespace Core.ApplicationServices
 
             return password;
         }
-
 
         private async Task ValidateWalletInput(string jmbg, short bankType, string pin, string bankAccount)
         {

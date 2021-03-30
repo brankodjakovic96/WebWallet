@@ -14,7 +14,9 @@ namespace Core.Domain.Entities
         public BankType BankType { get; private set; }
         public decimal Balance { get; private set; }
         public ICollection<Transaction> Transactions { get; private set; }
+        public DateTime WalletCreatedDateTime { get; private set; }
         public DateTime LastTransactionDateTime { get; private set; }
+        public DateTime LastTransferDateTime { get; private set; }
         public decimal UsedDepositThisMonth { get; private set; }
         public decimal UsedWithdrawThisMonth { get; private set; }
         public byte[] RowVersion { get; protected set; }
@@ -37,6 +39,7 @@ namespace Core.Domain.Entities
             _password = password;
             Balance = 0M;
             Transactions = new List<Transaction>();
+            WalletCreatedDateTime = DateTime.Now;
         }
 
         public bool CheckPassword(string password)
@@ -94,6 +97,10 @@ namespace Core.Domain.Entities
             Transactions.Add(transaction);
 
             LastTransactionDateTime = DateTime.Now;
+            if (type == TransactionType.TransferPayOut)
+            {
+                LastTransferDateTime = DateTime.Now;
+            }
         }
     }
 }

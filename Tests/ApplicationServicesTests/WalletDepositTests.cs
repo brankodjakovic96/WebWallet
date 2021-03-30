@@ -2,6 +2,7 @@
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services.Internal.BankRoutingService;
+using Core.Domain.Services.Internal.FeeService;
 using Core.Infrastructure.DataAccess.EfCoreDataAccess;
 using Core.Infrastructure.Services.BrankoBankServiceMock;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,7 @@ namespace Tests.ApplicationServicesTests
         private CoreEfCoreDbContext DbContext;
         private IBankRoutingService BankRoutingService;
         private IConfiguration Configuration;
+        private IFeeService FeeService;
 
         [TestInitialize]
         public async Task Setup()
@@ -30,6 +32,7 @@ namespace Tests.ApplicationServicesTests
             CoreUnitOfWork = new CoreEfCoreUnitOfWork(DbContext);
             var brankoBankService = new BrankoBankService();
             BankRoutingService = new BankRoutingService(brankoBankService);
+            FeeService = new FeeService();
 
             var inMemorySettings = new Dictionary<string, string> {
                 {"MaximalDeposit", "2000000"},
@@ -66,7 +69,7 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
@@ -96,7 +99,7 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
@@ -117,7 +120,7 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
@@ -136,7 +139,7 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
