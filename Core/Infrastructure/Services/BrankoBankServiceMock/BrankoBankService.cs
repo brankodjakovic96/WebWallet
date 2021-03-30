@@ -14,7 +14,9 @@ namespace Core.Infrastructure.Services.BrankoBankServiceMock
             Accounts = new Dictionary<string, decimal>()
             {
                 { "0605996781029:1234", 1000000M },
-                { "0605996781028:1234", 100000M }
+                { "0605996781028:1234", 100000M },
+                { "0605996781027:1234", 2000000M },
+
             };
         }
 

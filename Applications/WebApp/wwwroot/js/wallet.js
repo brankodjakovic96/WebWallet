@@ -12,18 +12,18 @@
 });
 
 
-function ShowMessage(successStatus, successMessage) {
+function ShowMessage(successStatus, successMessage, errorMessage) {
     if (successStatus == "yes") {
             $(document).ready(function () {
                 $('#modalTitle').html("<p class=\"text-success\">Success</p>");
-                $('#modalContent').html('Successfuly deposited funds');
+                $('#modalContent').html(successMessage);
                 $('#modalCenter').modal('show');
             });
     }
     if (successStatus == "no") {
             $(document).ready(function () {
                 $('#modalTitle').html("<p class=\"text-danger\">Failed</p>");
-                $('#modalContent').html(successMessage);
+                $('#modalContent').html(errorMessage);
                 $('#modalCenter').modal('show');
             });
     }

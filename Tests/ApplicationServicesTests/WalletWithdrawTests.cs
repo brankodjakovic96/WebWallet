@@ -78,6 +78,7 @@ namespace Tests.ApplicationServicesTests
 
                 Assert.AreEqual(10000M, wallet.Balance, "Wallet balance must be 10000");
                 Assert.AreEqual(TransactionType.Withdraw, wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Type, $"A transaction of type {TransactionType.Withdraw} must exist on the wallet.");
+                Assert.AreEqual(100000M, wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Amount, $"Withdraw transaction amount must be 100000.");
                 Assert.AreEqual(BankType.BrankoBank.ToString(), wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Destination, $"Source of the transaction should be {BankType.BrankoBank}.");
                 Assert.AreEqual("0605996781029", wallet.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.Withdraw).Source, $"Destination of the transaction should be 0605996781029.");
 

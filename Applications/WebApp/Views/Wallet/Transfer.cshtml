@@ -1,23 +1,31 @@
-﻿@model WalletWithdrawVM
+﻿@model WalletTransferVM
 
 
 
 
 <div class="container">
-    <h1 style="margin-bottom:2vh;">Withdraw</h1>
+    <h1 style="margin-bottom:2vh;">Transfer</h1>
+
+
     <div class="row">
         <div class="col-md-6">
-            <form asp-action="Withdraw" asp-controller="Wallet" method="post">
+            <form asp-action="Transfer" asp-controller="Wallet" method="post">
                 <div class="form-group">
-                    <label class="control-label" asp-for="Jmbg">Jmbg:</label>
-                    <input class="form-control" asp-for="Jmbg" />
-                    <span asp-validation-for="Jmbg" class="text-danger"></span>
+                    <label class="control-label" asp-for="JmbgFrom">Jmbg from:</label>
+                    <input class="form-control" asp-for="JmbgFrom" />
+                    <span asp-validation-for="JmbgFrom" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label" asp-for="Password">Password:</label>
-                    <input type="password" class="form-control" asp-for="Password" autocomplete="off" />
-                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <label class="control-label" asp-for="PasswordFrom">Password:</label>
+                    <input type="password" class="form-control" asp-for="PasswordFrom" autocomplete="off" />
+                    <span asp-validation-for="PasswordFrom" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="JmbgTo">Jmbg to:</label>
+                    <input class="form-control" asp-for="JmbgTo" />
+                    <span asp-validation-for="JmbgTo" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
@@ -25,7 +33,7 @@
                     <input id="Amount" class="form-control" pattern="^\d*(\.\d{0,2})?$" asp-format="{0:0.##}" asp-for="Amount" min="1" max="9999999999" autocomplete="off" />
                     <span asp-validation-for="Amount" class="text-danger"></span>
                 </div>
-                <input type="submit" value="Withdraw" class="btn btn-primary" />
+                <input type="submit" value="Transfer" class="btn btn-primary" />
             </form>
         </div>
     </div>
@@ -46,6 +54,7 @@
     </div>
 </div>
 
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -53,6 +62,6 @@
     <script src="~/js/wallet.js"></script>
     @if (ViewData["IsSuccessful"] != null)
     {
-        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', 'Successfuly withdrew funds', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
+        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', 'Successfuly transfered funds','@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
     }
 }
