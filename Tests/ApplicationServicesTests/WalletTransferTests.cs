@@ -2,6 +2,7 @@
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services.Internal.BankRoutingService;
+using Core.Domain.Services.Internal.FeeService;
 using Core.Infrastructure.DataAccess.EfCoreDataAccess;
 using Core.Infrastructure.Services.BrankoBankServiceMock;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,7 @@ namespace Tests.ApplicationServicesTests
         private CoreEfCoreDbContext DbContext;
         private IBankRoutingService BankRoutingService;
         private IConfiguration Configuration;
+        private IFeeService FeeService;
 
         [TestInitialize]
         public async Task Setup()
@@ -30,10 +32,16 @@ namespace Tests.ApplicationServicesTests
             CoreUnitOfWork = new CoreEfCoreUnitOfWork(DbContext);
             var brankoBankService = new BrankoBankService();
             BankRoutingService = new BankRoutingService(brankoBankService);
+            FeeService = new FeeService();
 
             var inMemorySettings = new Dictionary<string, string> {
                 {"MaximalDeposit", "750000"},
                 {"MaximalWithdraw", "500000"},
+                {"NumberOfDaysAfterCreationWithNoFee", "0"},
+                {"FirstTransactionFreeEachMonth", "True"},
+                {"FixedFeeLimit", "10000" },
+                {"FixedFee", "100"},
+                {"PercentageFee", "1"}
             };
 
             Configuration = new ConfigurationBuilder()
@@ -81,14 +89,13 @@ namespace Tests.ApplicationServicesTests
             DbContext = null;
         }
 
-
         [TestMethod]
-        public async Task WalletTransferSuccessTest()
+        public async Task WalletTransferWithoutFeeSuccessTest()
         {
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password1 = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
                 string password2 = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
@@ -107,10 +114,7 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual("0605996781029", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayOut).Source, $"Source of the transaction should be '0605996781029'.");
                 Assert.AreEqual("0605996781028", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayOut).Destination, $"Destination of the transaction should be '0605996781028'.");
 
-                //Assert.AreEqual(TransactionType.FeePayOut, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Type, $"A transaction of type {TransactionType.FeePayOut} must exist on the wallet.");
-                //Assert.AreEqual(0, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Amount, $"{TransactionType.FeePayOut} transaction amount must be 100000.");
-                //Assert.AreEqual("0605996781029", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Source, $"Source of the transaction should be '0605996781029'.");
-                //Assert.AreEqual("0605996781028", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Destination, $"Destination of the transaction should be '0605996781028'.");
+                Assert.AreEqual(null, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut), $"A transaction of type {TransactionType.FeePayOut} must not exist on the wallet.");
 
                 Assert.AreEqual(100000M, walletDesitnation.Balance, "Wallet balance must be 100000");
                 Assert.AreEqual(TransactionType.TransferPayIn, walletDesitnation.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayIn).Type, $"A transaction of type {TransactionType.TransferPayIn} must exist on the wallet.");
@@ -126,12 +130,60 @@ namespace Tests.ApplicationServicesTests
 
 
         [TestMethod]
+        public async Task WalletTransferWithFeeSuccessTest()
+        {
+            try
+            {
+                //Arrange
+                Configuration["FirstTransactionFreeEachMonth"] = "False";
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
+                string password1 = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                string password2 = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210");
+
+                await walletService.Deposit("0605996781029", password1, 101000M);
+
+                //Act
+                await walletService.Transfer("0605996781029", password1, "0605996781028", 100000M);
+
+                //Assert
+                Wallet walletSource = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
+                Wallet walletDesitnation = await CoreUnitOfWork.WalletRepository.GetById("0605996781028");
+
+                Assert.AreEqual(0, walletSource.Balance, "Wallet balance must be 0");
+                Assert.AreEqual(TransactionType.TransferPayOut, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayOut).Type, $"A transaction of type {TransactionType.TransferPayOut} must exist on the wallet.");
+                Assert.AreEqual(100000M, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayOut).Amount, $"{TransactionType.TransferPayOut} transaction amount must be 100000.");
+                Assert.AreEqual("0605996781029", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayOut).Source, $"Source of the transaction should be '0605996781029'.");
+                Assert.AreEqual("0605996781028", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayOut).Destination, $"Destination of the transaction should be '0605996781028'.");
+
+                Assert.AreEqual(TransactionType.FeePayOut, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Type, $"A transaction of type {TransactionType.FeePayOut} must exist on the wallet.");
+                Assert.AreEqual(1000M, walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Amount, $"{TransactionType.FeePayOut} transaction amount must be 1000.");
+                Assert.AreEqual("0605996781029", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Source, $"Source of the transaction should be '0605996781029'.");
+                Assert.AreEqual("System", walletSource.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.FeePayOut).Destination, $"Destination of the transaction should be 'System'.");
+
+                Assert.AreEqual(100000M, walletDesitnation.Balance, "Wallet balance must be 100000");
+                Assert.AreEqual(TransactionType.TransferPayIn, walletDesitnation.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayIn).Type, $"A transaction of type {TransactionType.TransferPayIn} must exist on the wallet.");
+                Assert.AreEqual(100000M, walletDesitnation.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayIn).Amount, $"{TransactionType.TransferPayIn} transaction amount must be 100000.");
+                Assert.AreEqual("0605996781029", walletDesitnation.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayIn).Source, $"Source of the transaction should be '0605996781029'.");
+                Assert.AreEqual("0605996781028", walletDesitnation.Transactions.FirstOrDefault(transaction => transaction.Type == TransactionType.TransferPayIn).Destination, $"Destination of the transaction should be '0605996781028'.");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+            finally
+            {
+                Configuration["FirstTransactionFreeEachMonth"] = "True";
+            }
+        }
+
+
+        [TestMethod]
         public async Task WalletTransferMoreThanMaximumWithdrawFailTest()
         {
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password1 = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
                 string password2 = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210");
                 string password3 = await walletService.CreateWallet("ime", "prezime", "0605996781027", (short)BankType.BrankoBank, "1234", "123456789876543210");
@@ -139,11 +191,11 @@ namespace Tests.ApplicationServicesTests
                 await walletService.Deposit("0605996781029", password1, 500000M);
                 await walletService.Deposit("0605996781027", password3, 750000M);
 
-                await walletService.Transfer("0605996781027", password3, "0605996781028", 500000);
+                await walletService.Transfer("0605996781027", password3, "0605996781028", 400000);
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password1, "0605996781028", 750000), $"Transaction would exceed wallet (0605996781029) monthly withdraw limit ({Configuration["MaximalWithdraw"]} RSD).");
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password1, "0605996781028", 400000), $"Transaction would exceed wallet (0605996781029) monthly withdraw limit ({Configuration["MaximalWithdraw"]} RSD).");
             }
             catch (Exception ex)
             {
@@ -159,18 +211,18 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password1 = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
                 string password2 = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210");
                 string password3 = await walletService.CreateWallet("ime", "prezime", "0605996781027", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 await walletService.Deposit("0605996781029", password1, 750000M);
                 await walletService.Deposit("0605996781027", password3, 750000M);
-                await walletService.Transfer("0605996781029", password1, "0605996781028", 500000);
+                await walletService.Transfer("0605996781029", password1, "0605996781028", 300000);
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password1, "0605996781028", 500000), $"Transaction would exceed wallet (0605996781028) monthly deposit limit ({Configuration["MaximalDeposit"]} RSD).");
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password1, "0605996781028", 300000), $"Transaction would exceed wallet (0605996781028) monthly deposit limit ({Configuration["MaximalDeposit"]} RSD).");
             }
             catch (Exception ex)
             {
@@ -185,7 +237,7 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
@@ -204,7 +256,7 @@ namespace Tests.ApplicationServicesTests
             try
             {
                 //Arrange
-                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration);
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
                 string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
                 await walletService.Deposit("0605996781029", password, 750000M);
 

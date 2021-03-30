@@ -2,6 +2,7 @@ using Core.ApplicationServices;
 using Core.Domain.Repositories;
 using Core.Domain.Services.External.BankService;
 using Core.Domain.Services.Internal.BankRoutingService;
+using Core.Domain.Services.Internal.FeeService;
 using Core.Infrastructure.DataAccess.EfCoreDataAccess;
 using Core.Infrastructure.Services.BrankoBankServiceMock;
 using Microsoft.AspNetCore.Builder;
@@ -39,13 +40,15 @@ namespace Applications.WebApp
             services.AddScoped<ICoreUnitOfWork, CoreEfCoreUnitOfWork>();
             services.AddScoped<IBrankoBankService, BrankoBankService>();
             services.AddScoped<IBankRoutingService, BankRoutingService>();
+            services.AddScoped<IFeeService, FeeService>();
             services.AddScoped((IServiceProvider serviceProvider) =>
             {
                 var coreUnitOfWork = serviceProvider.GetRequiredService<ICoreUnitOfWork>();
                 var bankRoutingService = serviceProvider.GetRequiredService<IBankRoutingService>();
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var feeService = serviceProvider.GetRequiredService<IFeeService>();
 
-                var walletService = new WalletService(coreUnitOfWork, bankRoutingService, configuration);
+                var walletService = new WalletService(coreUnitOfWork, bankRoutingService, configuration, feeService);
                 return walletService;
             });
             services.AddControllersWithViews();
