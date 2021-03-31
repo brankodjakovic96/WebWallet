@@ -136,7 +136,7 @@ namespace Tests.ApplicationServicesTests
         }
 
         [TestMethod]
-        public async Task WalletDepositWalletDoesntExistFailTest()
+        public async Task WalletWithdrawWalletDoesntExistFailTest()
         {
             try
             {
@@ -146,6 +146,29 @@ namespace Tests.ApplicationServicesTests
                 //Act
                 //Assert
                 await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Withdraw("0605996781029", "1234", 1100000M), $"No wallet for entered jmbg '{"0605996781029"}' and password pair.");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public async Task WalletWithdrawWalletBlockedFailTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                await walletService.Deposit("0605996781029", password, 750000M);
+                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
+                wallet.Block();
+                await CoreUnitOfWork.WalletRepository.Update(wallet);
+                await CoreUnitOfWork.SaveChangesAsync();
+                //Act
+                //Assert
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Withdraw("0605996781029", password, 500000M), $"Wallet '{0605996781029}' is blocked");
             }
             catch (Exception ex)
             {

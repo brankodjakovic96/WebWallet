@@ -96,6 +96,43 @@ namespace Tests.ApplicationServicesTests
         }
 
         [TestMethod]
+        public async Task GetWalletInfoBlockedWalletSuccessTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                Wallet walletTmp = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
+                walletTmp.Block();
+                await CoreUnitOfWork.WalletRepository.Update(walletTmp);
+                await CoreUnitOfWork.SaveChangesAsync();
+
+                //Act
+                WalletInfoDTO wallet = await walletService.GetWalletInfo("0605996781029", password);
+
+
+                //Assert
+
+                Assert.IsNotNull(wallet, "Wallet must not be null");
+                Assert.AreEqual("ime", wallet.FirstName, "FirstName must be 'ime'");
+                Assert.AreEqual("prezime", wallet.LastName, "LastName must be 'prezime'");
+                Assert.AreEqual("0605996781029", wallet.Jmbg, "Jmbg must be '0605996781029'");
+                Assert.AreEqual((short)BankType.BrankoBank, wallet.BankType, $"BankType must be '{BankType.BrankoBank}'");
+                Assert.AreEqual("123456789876543210", wallet.BankAccount, "BankAccount must be '123456789876543210'");
+                Assert.AreEqual(0, wallet.Balance, "Balance must be 0 RSD");
+                Assert.AreEqual(0, wallet.UsedDepositThisMonth, "UsedDepositThisMonth must be 0 RSD");
+                Assert.AreEqual(0, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
+                Assert.AreEqual(decimal.Parse(Configuration["MaximalDeposit"]), wallet.MaximalDeposit, $"MaximalDeposit must be {Configuration["MaximalDeposit"]} RSD");
+                Assert.AreEqual(decimal.Parse(Configuration["MaximalWithdraw"]), wallet.MaximalWithdraw, $"MaximalWithdraw must be {Configuration["MaximalDeposit"]} RSD");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
+
+        [TestMethod]
         public async Task GetWalletInfoWithDepositSuccessTest()
         {
             try
