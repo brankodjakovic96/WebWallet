@@ -183,5 +183,32 @@ namespace Applications.WebApp.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordVM changePasswordVM)
+        {
+            string password;
+            try
+            {
+                await WalletService.ChangePassword(changePasswordVM.Jmbg, changePasswordVM.OldPassword, changePasswordVM.NewPassword, changePasswordVM.NewPasswordConfirmation);
+                ModelState.Clear();
+                ViewData["IsSuccessful"] = "yes";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
+            }
+        }
+
+
     }
 }

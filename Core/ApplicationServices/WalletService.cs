@@ -83,6 +83,19 @@ namespace Core.ApplicationServices
 
         }
 
+        public async Task ChangePassword(string jmbg, string oldPassword, string newPassword, string newPasswordConfirmation)
+        {
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(jmbg);
+            if (wallet == null || !wallet.CheckPassword(oldPassword))
+            {
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
+            }
+
+            wallet.ChangePassword(oldPassword, newPassword, newPasswordConfirmation);
+            await CoreUnitOfWork.WalletRepository.Update(wallet);
+            await CoreUnitOfWork.SaveChangesAsync();
+        }
+
 
         public async Task<decimal> CalculateTransferFee(string jmbg, string password, decimal amount)
         {
@@ -316,7 +329,7 @@ namespace Core.ApplicationServices
         {
             await ValidateWalletInput(jmbg, bankType, pin, bankAccount);
 
-            var password = PasswordGenerator.Generate(6, 2);
+            var password = PasswordGenerator.Generate(6);
             var wallet = new Wallet(firstName, lastName, jmbg, (BankType)bankType, pin, bankAccount, password);
 
             await CoreUnitOfWork.WalletRepository.Insert(wallet);

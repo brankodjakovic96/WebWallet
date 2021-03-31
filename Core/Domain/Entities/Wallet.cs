@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Core.Domain.Entities
@@ -22,8 +23,8 @@ namespace Core.Domain.Entities
         public bool IsBlocked { get; private set; }
         public byte[] RowVersion { get; protected set; }
 
-
         private string _password;
+
         public Wallet()
         {
             Transactions = new List<Transaction>();
@@ -119,6 +120,33 @@ namespace Core.Domain.Entities
                 throw new InvalidOperationException($"Wallet {Jmbg} is not blocked");
             }
             IsBlocked = false;
+        }
+
+
+        public void ChangePassword(string oldPassword, string newPassword, string newPasswordConfirmation)
+        {
+            if (oldPassword != _password)
+            {
+                throw new ArgumentException("Old password doesn't match.");
+            }
+            if (newPassword == oldPassword)
+            {
+                throw new ArgumentException("New password and old password must be different.");
+            }
+            if (newPassword != newPasswordConfirmation)
+            {
+                throw new ArgumentException("New password and password confirmation do not match.");
+            }
+            if (newPassword.Length != 6)
+            {
+                throw new ArgumentException("New password must be 6 digits long.");
+            }
+            if (newPassword.Any(c => !char.IsDigit(c)))
+            {
+                throw new ArgumentException("New password can only contain digits.");
+            }
+
+            _password = newPassword;
         }
     }
 }
