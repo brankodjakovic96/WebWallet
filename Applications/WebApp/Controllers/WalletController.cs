@@ -1,5 +1,7 @@
 ﻿using Applications.WebApp.Models;
+using Common.Utils;
 using Core.ApplicationServices;
+using Core.ApplicationServices.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -128,6 +130,44 @@ namespace Applications.WebApp.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { errorMessage = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult WalletInfo()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> WalletInfo(WalletInfoRequestVM walletInfoRequestVM)
+        {
+            try
+            {
+                WalletInfoDTO walletInfoDTO = await WalletService.GetWalletInfo(walletInfoRequestVM.Jmbg, walletInfoRequestVM.Password);
+                WalletInfoResponseVM walletInfoResponseVM =
+                    new WalletInfoResponseVM()
+                    {
+                        Jmbg = walletInfoDTO.Jmbg,
+                        FirstName = walletInfoDTO.FirstName,
+                        LastName = walletInfoDTO.LastName,
+                        BankType = EnumMapper.MapBankType(walletInfoDTO.BankType),
+                        BankAccount = walletInfoDTO.BankAccount,
+                        Balance = walletInfoDTO.Balance,
+                        UsedDepositThisMonth = walletInfoDTO.UsedDepositThisMonth,
+                        MaximalDeposit = walletInfoDTO.MaximalDeposit,
+                        UsedWithdrawThisMonth = walletInfoDTO.UsedWithdrawThisMonth,
+                        MaximalWithdraw = walletInfoDTO.MaximalWithdraw
+                    };
+                ModelState.Clear();
+                return View(new WalletInfoPageVM(){ WalletInfoResponseVM = walletInfoResponseVM });
+            }
+            catch (Exception ex)
+            {
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
             }
         }
 

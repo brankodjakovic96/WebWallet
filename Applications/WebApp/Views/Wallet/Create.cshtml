@@ -76,6 +76,6 @@
     }
     @if (ViewData["IsSuccessful"] != null)
     {
-        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
+        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', '', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
     }
 }
