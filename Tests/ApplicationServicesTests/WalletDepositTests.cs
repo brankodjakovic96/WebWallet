@@ -150,5 +150,28 @@ namespace Tests.ApplicationServicesTests
                 Assert.Fail("Unexpected error: " + ex.Message);
             }
         }
+
+        [TestMethod]
+        public async Task WalletDepositWalletBlockedFailTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
+                wallet.Block();
+                await CoreUnitOfWork.WalletRepository.Update(wallet);
+                await CoreUnitOfWork.SaveChangesAsync();
+
+                //Act
+                //Assert
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Deposit("0605996781029", password, 1100000M), $"Wallet '{0605996781029}' is blocked");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
     }
 }

@@ -144,6 +144,11 @@ namespace Core.ApplicationServices
                 throw new ArgumentException($"No wallet for entered jmbg '{sourceJmbg}' and password pair.");
             }
 
+            if (walletSource.IsBlocked)
+            {
+                throw new InvalidOperationException($"Wallet '{sourceJmbg}' is blocked");
+            }
+
             Wallet walletDestination = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
                     wallet => wallet.Jmbg == desitnationJmbg,
                     wallet => wallet.Transactions
@@ -211,6 +216,11 @@ namespace Core.ApplicationServices
                 throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
             }
 
+            if (wallet.IsBlocked)
+            {
+                throw new InvalidOperationException($"Wallet '{jmbg}' is blocked");
+            }
+
             decimal maximalDeposit;
             bool success = decimal.TryParse(Configuration["MaximalDeposit"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalDeposit);
             if (!success)
@@ -253,6 +263,11 @@ namespace Core.ApplicationServices
             if (wallet == null || !wallet.CheckPassword(password))
             {
                 throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
+            }
+
+            if (wallet.IsBlocked)
+            {
+                throw new InvalidOperationException($"Wallet '{jmbg}' is blocked");
             }
 
             decimal maximalWithdraw;

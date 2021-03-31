@@ -19,6 +19,7 @@ namespace Core.Domain.Entities
         public DateTime LastTransferDateTime { get; private set; }
         public decimal UsedDepositThisMonth { get; private set; }
         public decimal UsedWithdrawThisMonth { get; private set; }
+        public bool IsBlocked { get; set; }
         public byte[] RowVersion { get; protected set; }
 
 
@@ -101,6 +102,23 @@ namespace Core.Domain.Entities
             {
                 LastTransferDateTime = DateTime.Now;
             }
+        }
+
+        public void Block()
+        {
+            if (IsBlocked) {
+                throw new InvalidOperationException($"Wallet {Jmbg} is already blocked");
+            }
+            IsBlocked = true;
+        }
+
+        public void UnBlock()
+        {
+            if (!IsBlocked)
+            {
+                throw new InvalidOperationException($"Wallet {Jmbg} is not blocked");
+            }
+            IsBlocked = false;
         }
     }
 }
