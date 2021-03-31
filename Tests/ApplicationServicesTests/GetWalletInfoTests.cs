@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -88,6 +89,7 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual(0, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalDeposit"]), wallet.MaximalDeposit, $"MaximalDeposit must be {Configuration["MaximalDeposit"]} RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalWithdraw"]), wallet.MaximalWithdraw, $"MaximalWithdraw must be {Configuration["MaximalDeposit"]} RSD");
+                Assert.AreEqual(0, wallet.TransactionDTOs.Count, "There must be no transactions on the wallet");
             }
             catch (Exception ex)
             {
@@ -125,6 +127,8 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual(0, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalDeposit"]), wallet.MaximalDeposit, $"MaximalDeposit must be {Configuration["MaximalDeposit"]} RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalWithdraw"]), wallet.MaximalWithdraw, $"MaximalWithdraw must be {Configuration["MaximalDeposit"]} RSD");
+                Assert.AreEqual(0, wallet.TransactionDTOs.Count, "There must be no transactions on the wallet");
+
             }
             catch (Exception ex)
             {
@@ -159,6 +163,11 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual(0, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalDeposit"]), wallet.MaximalDeposit, $"MaximalDeposit must be {Configuration["MaximalDeposit"]} RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalWithdraw"]), wallet.MaximalWithdraw, $"MaximalWithdraw must be {Configuration["MaximalDeposit"]} RSD");
+                Assert.AreEqual(1, wallet.TransactionDTOs.Count, "There must be one transaction on the wallet");
+                Assert.AreNotEqual(null, wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit), $"Tranasction of type {TransactionType.Deposit} must exist on the wallet");
+                Assert.AreEqual(100000M, wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit).Amount, $"Deposit transaction amount must be 100000.");
+                Assert.AreEqual(BankType.BrankoBank.ToString(), wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit).Source, $"Source of the transaction should be {BankType.BrankoBank}.");
+                Assert.AreEqual("0605996781029", wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit).Destination, $"Destination of the transaction should be 0605996781029.");
             }
             catch (Exception ex)
             {
@@ -194,6 +203,17 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual(50000M, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalDeposit"]), wallet.MaximalDeposit, $"MaximalDeposit must be {Configuration["MaximalDeposit"]} RSD");
                 Assert.AreEqual(decimal.Parse(Configuration["MaximalWithdraw"]), wallet.MaximalWithdraw, $"MaximalWithdraw must be {Configuration["MaximalDeposit"]} RSD");
+                Assert.AreEqual(2, wallet.TransactionDTOs.Count, "There must be two transactions on the wallet");
+
+                Assert.AreNotEqual(null, wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit), $"Tranasction of type {TransactionType.Deposit} must exist on the wallet");
+                Assert.AreEqual(100000M, wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit).Amount, $"Deposit transaction amount must be 100000.");
+                Assert.AreEqual(BankType.BrankoBank.ToString(), wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit).Source, $"Source of the transaction should be {BankType.BrankoBank}.");
+                Assert.AreEqual("0605996781029", wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Deposit).Destination, $"Destination of the transaction should be 0605996781029.");
+
+                Assert.AreNotEqual(null, wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Withdraw), $"Tranasction of type {TransactionType.Withdraw} must exist on the wallet");
+                Assert.AreEqual(50000M, wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Withdraw).Amount, $"Withdraw transaction amount must be 50000.");
+                Assert.AreEqual(BankType.BrankoBank.ToString(), wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Withdraw).Destination, $"Source of the transaction should be {BankType.BrankoBank}.");
+                Assert.AreEqual("0605996781029", wallet.TransactionDTOs.FirstOrDefault(transaction => transaction.Type == (short)TransactionType.Withdraw).Source, $"Destination of the transaction should be 0605996781029.");
             }
             catch (Exception ex)
             {

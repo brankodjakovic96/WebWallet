@@ -15,6 +15,7 @@ namespace Core.Infrastructure.DataAccess.EfCoreDataAccess.EntityConfigurations
             modelBuilder.Property(a => a.Source).HasMaxLength(100);
             modelBuilder.Property(a => a.Destination).HasMaxLength(100);
             modelBuilder.Property(a => a.Amount).HasPrecision(12, 2);
+            modelBuilder.Property(a => a.WalletBalance).HasPrecision(12, 2);
             modelBuilder.Property(a => a.TransactionDateTime).HasColumnType("datetime2");
             modelBuilder.HasOne(a => a.Wallet).WithMany(w => w.Transactions).HasForeignKey(a => a.WalletJmbg).OnDelete(DeleteBehavior.Cascade);
         }

@@ -16,5 +16,6 @@ namespace Core.ApplicationServices.DTOs
         public decimal MaximalDeposit { get; set; }
         public decimal UsedWithdrawThisMonth { get; set; }
         public decimal MaximalWithdraw { get; set; }
+        public IList<TransactionDTO> TransactionDTOs { get; set; }
     }
 }

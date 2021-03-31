@@ -19,7 +19,7 @@ namespace Core.Domain.Entities
         public DateTime LastTransferDateTime { get; private set; }
         public decimal UsedDepositThisMonth { get; private set; }
         public decimal UsedWithdrawThisMonth { get; private set; }
-        public bool IsBlocked { get; set; }
+        public bool IsBlocked { get; private set; }
         public byte[] RowVersion { get; protected set; }
 
 
@@ -65,7 +65,7 @@ namespace Core.Domain.Entities
 
             UsedDepositThisMonth += amount;
 
-            var transaction = new Transaction(this, amount, type, source, Jmbg);
+            var transaction = new Transaction(this, amount, type, source, Jmbg, Balance);
 
             Transactions.Add(transaction);
 
@@ -93,7 +93,7 @@ namespace Core.Domain.Entities
             UsedWithdrawThisMonth += amount;
 
 
-            var transaction = new Transaction(this, amount, type, Jmbg, destination);
+            var transaction = new Transaction(this, amount, type, Jmbg, destination, Balance);
 
             Transactions.Add(transaction);
 

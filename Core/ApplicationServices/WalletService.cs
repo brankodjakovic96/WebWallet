@@ -35,7 +35,10 @@ namespace Core.ApplicationServices
 
         public async Task<WalletInfoDTO> GetWalletInfo(string jmbg, string password)
         {
-            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(jmbg);
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetFirstOrDefaultWithIncludes(
+                    wallet => wallet.Jmbg == jmbg,
+                    wallet => wallet.Transactions
+                );
             if (wallet == null || !wallet.CheckPassword(password))
             {
                 throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
@@ -58,12 +61,22 @@ namespace Core.ApplicationServices
                 FirstName = wallet.FirstName,
                 LastName = wallet.LastName,
                 BankType = (short)wallet.BankType,
-                BankAccount =wallet.BankAccount,
+                BankAccount = wallet.BankAccount,
                 Balance = wallet.Balance,
                 UsedDepositThisMonth = wallet.UsedDepositThisMonth,
                 MaximalDeposit = maximalDeposit,
                 UsedWithdrawThisMonth = wallet.UsedWithdrawThisMonth,
-                MaximalWithdraw = maximalWithdraw
+                MaximalWithdraw = maximalWithdraw,
+                TransactionDTOs = wallet.Transactions.Select(
+                    transaction => new TransactionDTO() {
+                        Amount = transaction.Amount,
+                        Destination = transaction.Destination,
+                        Source = transaction.Source,
+                        TransactionDateTime = transaction.TransactionDateTime,
+                        Type = (short)transaction.Type,
+                        WalletBalance = transaction.WalletBalance
+                    }
+                ).ToList()
             };
 
             return walletInfoDTO;

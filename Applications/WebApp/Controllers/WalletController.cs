@@ -1,4 +1,5 @@
 ﻿using Applications.WebApp.Models;
+using Applications.WebApp.Models.WalletInfo;
 using Common.Utils;
 using Core.ApplicationServices;
 using Core.ApplicationServices.DTOs;
@@ -157,7 +158,18 @@ namespace Applications.WebApp.Controllers
                         UsedDepositThisMonth = walletInfoDTO.UsedDepositThisMonth,
                         MaximalDeposit = walletInfoDTO.MaximalDeposit,
                         UsedWithdrawThisMonth = walletInfoDTO.UsedWithdrawThisMonth,
-                        MaximalWithdraw = walletInfoDTO.MaximalWithdraw
+                        MaximalWithdraw = walletInfoDTO.MaximalWithdraw,
+                        TransactionVMs = walletInfoDTO.TransactionDTOs.Select(
+                                transaction => new TransactionResposneVM() {
+                                    Inflow = (EnumMapper.MapTransactionTypeFlow(transaction.Type) == "Inflow" ? transaction.Amount : 0M),
+                                    Outflow = (EnumMapper.MapTransactionTypeFlow(transaction.Type) == "Outflow" ? transaction.Amount : 0M),
+                                    Destination = transaction.Destination,
+                                    Source = transaction.Source,
+                                    TransactionDateTime = transaction.TransactionDateTime,
+                                    Type = EnumMapper.MapTransactionType(transaction.Type),
+                                    WalletBalance = transaction.WalletBalance
+                                }
+                            ).OrderByDescending(t => t.TransactionDateTime).ToList()
                     };
                 ModelState.Clear();
                 return View(new WalletInfoPageVM(){ WalletInfoResponseVM = walletInfoResponseVM });

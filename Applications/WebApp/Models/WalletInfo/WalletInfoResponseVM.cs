@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Applications.WebApp.Models.WalletInfo;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Applications.WebApp.Models
+namespace Applications.WebApp.Models.WalletInfo
 {
     public class WalletInfoResponseVM
     {
@@ -17,5 +18,6 @@ namespace Applications.WebApp.Models
         public decimal MaximalDeposit { get; set; }
         public decimal UsedWithdrawThisMonth { get; set; }
         public decimal MaximalWithdraw { get; set; }
+        public List<TransactionResposneVM> TransactionVMs { get; set; }
     }
 }

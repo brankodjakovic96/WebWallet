@@ -4,14 +4,16 @@ using Core.Infrastructure.DataAccess.EfCoreDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Core.Infrastructure.DataAccess.EfCoreDataAccess.Migrations
 {
     [DbContext(typeof(CoreEfCoreDbContext))]
-    partial class CoreEfCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210331144543_Changed_Balance_To_WalletBalance_On_Transaction")]
+    partial class Changed_Balance_To_WalletBalance_On_Transaction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
