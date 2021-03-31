@@ -7,18 +7,11 @@ namespace Common.Utils
 {
     public static class PasswordGenerator
     {
-        private static readonly char[] Punctuations = "!@#$%^&*()_-+=[{]};:>|./?".ToCharArray();
-
-        public static string Generate(int length, int numberOfNonAlphanumericCharacters)
+        public static string Generate(int length)
         {
             if (length < 1 || length > 128)
             {
                 throw new ArgumentException(nameof(length));
-            }
-
-            if (numberOfNonAlphanumericCharacters > length || numberOfNonAlphanumericCharacters < 0)
-            {
-                throw new ArgumentException(nameof(numberOfNonAlphanumericCharacters));
             }
 
             using (var rng = RandomNumberGenerator.Create())
@@ -32,46 +25,10 @@ namespace Common.Utils
 
                 for (var iter = 0; iter < length; iter++)
                 {
-                    var i = byteBuffer[iter] % 87;
+                    var i = byteBuffer[iter] % 10;
 
-                    if (i < 10)
-                    {
-                        characterBuffer[iter] = (char)('0' + i);
-                    }
-                    else if (i < 36)
-                    {
-                        characterBuffer[iter] = (char)('A' + i - 10);
-                    }
-                    else if (i < 62)
-                    {
-                        characterBuffer[iter] = (char)('a' + i - 36);
-                    }
-                    else
-                    {
-                        characterBuffer[iter] = Punctuations[i - 62];
-                        count++;
-                    }
-                }
-
-                if (count >= numberOfNonAlphanumericCharacters)
-                {
-                    return new string(characterBuffer);
-                }
-
-                int j;
-                var rand = new Random();
-
-                for (j = 0; j < numberOfNonAlphanumericCharacters - count; j++)
-                {
-                    int k;
-                    do
-                    {
-                        k = rand.Next(0, length);
-                    }
-                    while (!char.IsLetterOrDigit(characterBuffer[k]));
-
-                    characterBuffer[k] = Punctuations[rand.Next(0, Punctuations.Length)];
-                }
+                    characterBuffer[iter] = (char)('0' + i);
+                }          
 
                 return new string(characterBuffer);
             }
