@@ -80,6 +80,10 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual(BankType.BrankoBank, wallet.BankType, $"BankType must be '{BankType.BrankoBank}'");
                 Assert.AreEqual("1234", wallet.PIN, "PIN must be '1234'");
                 Assert.AreEqual("123456789876543210", wallet.BankAccount, "BankAccount must be '123456789876543210'");
+                Assert.AreEqual(0, wallet.Balance, "Balance must be 0 RSD");
+                Assert.AreEqual(0, wallet.UsedDepositThisMonth, "UsedDepositThisMonth must be 0 RSD");
+                Assert.AreEqual(0, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
+
             }
             catch (Exception ex)
             {
@@ -108,15 +112,6 @@ namespace Tests.ApplicationServicesTests
             catch (Exception ex)
             {
                 Assert.Fail("Unexpected error: " + ex.Message);
-            }
-            finally
-            {
-                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
-                if (wallet != null)
-                {
-                    await CoreUnitOfWork.WalletRepository.Delete(wallet);
-                    await CoreUnitOfWork.SaveChangesAsync();
-                }
             }
         }
 

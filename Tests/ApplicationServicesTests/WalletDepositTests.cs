@@ -134,17 +134,16 @@ namespace Tests.ApplicationServicesTests
         }
 
         [TestMethod]
-        public async Task WalletDepositAccountDoesntExistFailTest()
+        public async Task WalletDepositWalletDoesntExistFailTest()
         {
             try
             {
                 //Arrange
                 var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
-                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
 
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Deposit("0605996781028", password, 1100000M), $"Account not found for given jmbg and pin!");
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Deposit("0605996781029", "1234", 1100000M), $"No wallet for entered jmbg '{"0605996781029"}' and password pair.");
             }
             catch (Exception ex)
             {

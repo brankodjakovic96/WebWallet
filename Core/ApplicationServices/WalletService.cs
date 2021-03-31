@@ -1,4 +1,5 @@
 ﻿using Common.Utils;
+using Core.ApplicationServices.DTOs;
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services.Internal.BankRoutingService;
@@ -31,6 +32,44 @@ namespace Core.ApplicationServices
             Configuration = configuration;
             FeeService = feeService;
         }
+
+        public async Task<WalletInfoDTO> GetWalletInfo(string jmbg, string password)
+        {
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(jmbg);
+            if (wallet == null || !wallet.CheckPassword(password))
+            {
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
+            }
+            decimal maximalDeposit;
+            decimal maximalWithdraw;
+            bool success = decimal.TryParse(Configuration["MaximalDeposit"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalDeposit);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["MaximalDeposit"]} (MaximalDeposit) to decimal");
+            }
+            success = decimal.TryParse(Configuration["MaximalWithdraw"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalWithdraw);
+            if (!success)
+            {
+                throw new ArgumentException($"Couldn't cast {Configuration["MaximalWithdraw"]} (MaximalWithdraw) to decimal");
+            }
+            var walletInfoDTO = new WalletInfoDTO()
+            {
+                Jmbg = wallet.Jmbg,
+                FirstName = wallet.FirstName,
+                LastName = wallet.LastName,
+                BankType = (short)wallet.BankType,
+                BankAccount =wallet.BankAccount,
+                Balance = wallet.Balance,
+                UsedDepositThisMonth = wallet.UsedDepositThisMonth,
+                MaximalDeposit = maximalDeposit,
+                UsedWithdrawThisMonth = wallet.UsedWithdrawThisMonth,
+                MaximalWithdraw = maximalWithdraw
+            };
+
+            return walletInfoDTO;
+
+        }
+
 
         public async Task<decimal> CalculateTransferFee(string jmbg, string password, decimal amount)
         {
