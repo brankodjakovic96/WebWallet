@@ -43,6 +43,11 @@ namespace Core.ApplicationServices
             {
                 throw new ArgumentException($"No wallet for entered jmbg '{jmbg}' and password pair.");
             }
+
+            wallet.CheckAndUpdateUsedDepositWithdraw();
+            await CoreUnitOfWork.WalletRepository.Update(wallet);
+            await CoreUnitOfWork.SaveChangesAsync();
+
             decimal maximalDeposit;
             decimal maximalWithdraw;
             bool success = decimal.TryParse(Configuration["MaximalDeposit"], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out maximalDeposit);
@@ -67,6 +72,7 @@ namespace Core.ApplicationServices
                 MaximalDeposit = maximalDeposit,
                 UsedWithdrawThisMonth = wallet.UsedWithdrawThisMonth,
                 MaximalWithdraw = maximalWithdraw,
+                IsBlocked = wallet.IsBlocked,
                 TransactionDTOs = wallet.Transactions.Select(
                     transaction => new TransactionDTO() {
                         Amount = transaction.Amount,
@@ -80,7 +86,44 @@ namespace Core.ApplicationServices
             };
 
             return walletInfoDTO;
+        }
 
+        public async Task BlockWallet(string jmbg, string adminPassword)
+        {
+            if (adminPassword != Configuration["AdminPassword"])
+            {
+                throw new ArgumentException($"Wrong admin password.");
+
+            }
+
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(jmbg);
+            if (wallet == null)
+            {
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}'.");
+            }
+
+            wallet.Block();
+            await CoreUnitOfWork.WalletRepository.Update(wallet);
+            await CoreUnitOfWork.SaveChangesAsync();
+        }
+
+        public async Task UnblockWallet(string jmbg, string adminPassword)
+        {
+            if (adminPassword != Configuration["AdminPassword"])
+            {
+                throw new ArgumentException($"Wrong admin password.");
+
+            }
+
+            Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById(jmbg);
+            if (wallet == null)
+            {
+                throw new ArgumentException($"No wallet for entered jmbg '{jmbg}'.");
+            }
+
+            wallet.Unblock();
+            await CoreUnitOfWork.WalletRepository.Update(wallet);
+            await CoreUnitOfWork.SaveChangesAsync();
         }
 
         public async Task ChangePassword(string jmbg, string oldPassword, string newPassword, string newPasswordConfirmation)

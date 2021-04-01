@@ -113,7 +113,7 @@ namespace Core.Domain.Entities
             IsBlocked = true;
         }
 
-        public void UnBlock()
+        public void Unblock()
         {
             if (!IsBlocked)
             {
@@ -147,6 +147,15 @@ namespace Core.Domain.Entities
             }
 
             _password = newPassword;
+        }
+
+        public void CheckAndUpdateUsedDepositWithdraw()
+        {
+            if (LastTransactionDateTime.Month != DateTime.Now.Month || LastTransactionDateTime.Year != DateTime.Now.Year)
+            {
+                UsedDepositThisMonth = 0M;
+                UsedWithdrawThisMonth = 0M;
+            }
         }
     }
 }

@@ -1,0 +1,71 @@
+﻿@model WalletAdministrationVM
+
+
+
+
+<div class="container">
+    <h1 style="margin-bottom:2vh;">Block/Unblock wallet</h1>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="AdministerWallet" asp-controller="Wallet" method="post">
+                <div class="form-group">
+                    <label class="control-label" asp-for="Jmbg">Jmbg:</label>
+                    <input class="form-control" asp-for="Jmbg" />
+                    <span asp-validation-for="Jmbg" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="AdminPassword">Admin password:</label>
+                    <input type="password" class="form-control" asp-for="AdminPassword" autocomplete="off" />
+                    <span asp-validation-for="AdminPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="flexRadioDefault1" asp-for="Action" value="Block" checked>
+                    <label class="form-check-label" for="flexRadioDefault1" asp-for="Action">
+                        Block
+                    </label>
+                    <span asp-validation-for="Action" class="text-danger"></span>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="flexRadioDefault2" asp-for="Action" value="Unblock">
+                    <label class="form-check-label" for="flexRadioDefault2" asp-for="Action">
+                        Unblock
+                    </label>
+                    <span asp-validation-for="Action" class="text-danger"></span>
+                </div>
+
+                <input type="submit" value="Confirm" class="btn btn-primary mt-2" />
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/wallet.js"></script>
+    @if (ViewData["IsSuccessful"] != null)
+    {
+        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', '@(ViewData["SuccessMessage"] == null ? "" : ViewData["SuccessMessage"])', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
+    }
+}

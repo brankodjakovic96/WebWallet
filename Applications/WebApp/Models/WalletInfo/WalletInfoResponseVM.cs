@@ -18,6 +18,7 @@ namespace Applications.WebApp.Models.WalletInfo
         public decimal MaximalDeposit { get; set; }
         public decimal UsedWithdrawThisMonth { get; set; }
         public decimal MaximalWithdraw { get; set; }
+        public bool IsBlocked { get; set; }
         public List<TransactionResposneVM> TransactionVMs { get; set; }
     }
 }

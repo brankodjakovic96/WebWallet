@@ -83,6 +83,8 @@ namespace Tests.ApplicationServicesTests
                 Assert.AreEqual(0, wallet.Balance, "Balance must be 0 RSD");
                 Assert.AreEqual(0, wallet.UsedDepositThisMonth, "UsedDepositThisMonth must be 0 RSD");
                 Assert.AreEqual(0, wallet.UsedWithdrawThisMonth, "UsedWithdrawThisMonth must be 0 RSD");
+                Assert.AreEqual(false, wallet.IsBlocked, "Wallet must be unblocked");
+
 
             }
             catch (Exception ex)

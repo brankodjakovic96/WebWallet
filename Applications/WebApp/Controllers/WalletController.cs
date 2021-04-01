@@ -159,6 +159,7 @@ namespace Applications.WebApp.Controllers
                         MaximalDeposit = walletInfoDTO.MaximalDeposit,
                         UsedWithdrawThisMonth = walletInfoDTO.UsedWithdrawThisMonth,
                         MaximalWithdraw = walletInfoDTO.MaximalWithdraw,
+                        IsBlocked = walletInfoDTO.IsBlocked,
                         TransactionVMs = walletInfoDTO.TransactionDTOs.Select(
                                 transaction => new TransactionResposneVM() {
                                     Inflow = (EnumMapper.MapTransactionTypeFlow(transaction.Type) == "Inflow" ? transaction.Amount : 0M),
@@ -192,11 +193,50 @@ namespace Applications.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangePassword(ChangePasswordVM changePasswordVM)
         {
-            string password;
             try
             {
                 await WalletService.ChangePassword(changePasswordVM.Jmbg, changePasswordVM.OldPassword, changePasswordVM.NewPassword, changePasswordVM.NewPasswordConfirmation);
                 ModelState.Clear();
+                ViewData["IsSuccessful"] = "yes";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewData["IsSuccessful"] = "no";
+                ViewData["ErrorMessage"] = ex.Message;
+
+                return View();
+            }
+        }
+
+
+        [HttpGet]
+        public IActionResult AdministerWallet()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AdministerWallet(WalletAdministrationVM walletAdministrationVM)
+        {
+            try
+            {
+                if (walletAdministrationVM.Action == "Block")
+                {
+                    await WalletService.BlockWallet(walletAdministrationVM.Jmbg, walletAdministrationVM.AdminPassword);
+                    ModelState.Clear();
+                    ViewData["SuccessMessage"] = "Wallet has been blocked successfully";
+                }
+                else if (walletAdministrationVM.Action == "Unblock")
+                {
+                    await WalletService.UnblockWallet(walletAdministrationVM.Jmbg, walletAdministrationVM.AdminPassword);
+                    ModelState.Clear();
+                    ViewData["SuccessMessage"] = "Wallet has been unblocked successfully";
+                }
+                else
+                {
+                    throw new ArgumentException("Unknown action");
+                }
                 ViewData["IsSuccessful"] = "yes";
                 return View();
             }
