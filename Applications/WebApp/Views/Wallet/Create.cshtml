@@ -74,6 +74,7 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/wallet.js"></script>
     @if (ViewData["IsSuccessful"] != null)
     {
         <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', '', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
