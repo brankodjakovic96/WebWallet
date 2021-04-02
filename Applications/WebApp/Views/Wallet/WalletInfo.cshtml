@@ -1,0 +1,126 @@
+﻿@model WalletInfoPageVM
+
+
+<div class="container">
+    <h1 style="margin-bottom:2vh;">Get wallet info</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="WalletInfo" asp-controller="Wallet" method="post">
+                <div class="form-group">
+                    <label class="control-label" asp-for="WalletInfoRequestVM.Jmbg">Jmbg:</label>
+                    <input class="form-control" asp-for="WalletInfoRequestVM.Jmbg" />
+                    <span asp-validation-for="WalletInfoRequestVM.Jmbg" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="WalletInfoRequestVM.Password">Password:</label>
+                    <input type="password" class="form-control" asp-for="WalletInfoRequestVM.Password" autocomplete="off" />
+                    <span asp-validation-for="WalletInfoRequestVM.Password" class="text-danger"></span>
+                </div>
+
+                <input type="submit" value="Confirm" class="btn btn-primary" />
+            </form>
+        </div>
+    </div>
+    @if (Model != null && Model.WalletInfoResponseVM != null)
+    {
+        <hr />
+        <div class="row pt-2">
+            <div class="col-md-12">
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label" asp-for="WalletInfoResponseVM.Jmbg">Jmbg:</label>
+                    <input class="form-control" asp-for="WalletInfoResponseVM.Jmbg" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label">Balance:</label>
+                    <input class="form-control" value="@(String.Format("{0:n}", Model.WalletInfoResponseVM.Balance) + " RSD")" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label" asp-for="WalletInfoResponseVM.FirstName">First name:</label>
+                    <input class="form-control" asp-for="WalletInfoResponseVM.FirstName" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label">Used deposit amount this month:</label>
+                    <input class="form-control" value="@(String.Format("{0:n}", Model.WalletInfoResponseVM.UsedDepositThisMonth) + "/" + String.Format("{0:n}", Model.WalletInfoResponseVM.MaximalDeposit) + " RSD")" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label" asp-for="WalletInfoResponseVM.LastName">Last name:</label>
+                    <input class="form-control" asp-for="WalletInfoResponseVM.LastName" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label">Used withdraw amount this month:</label>
+                    <input class="form-control" value="@(String.Format("{0:n}", Model.WalletInfoResponseVM.UsedWithdrawThisMonth) + "/" + String.Format("{0:n}", Model.WalletInfoResponseVM.MaximalWithdraw) + " RSD")" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label" asp-for="WalletInfoResponseVM.BankType">Bank:</label>
+                    <input class="form-control" asp-for="WalletInfoResponseVM.BankType" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label" asp-for="WalletInfoResponseVM.BankAccount">Bank account:</label>
+                    <input class="form-control" asp-for="WalletInfoResponseVM.BankAccount" disabled="disabled" />
+                </div>
+                <div class="form-group col-md-6 float-left">
+                    <label class="control-label">Status (Active/Blocked):</label>
+                    <input class="form-control" value="@(Model.WalletInfoResponseVM.IsBlocked ? "Blocked" : "Active")" disabled="disabled" />
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Source</th>
+                        <th scope="col">Destination</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Inflow</th>
+                        <th scope="col">Outflow</th>
+                        <th scope="col">Balance</th>
+                    </tr>
+                </thead>
+                    <tbody>
+                        @foreach (var item in Model.WalletInfoResponseVM.TransactionVMs)
+                        {
+                        <tr>
+                            <td>@item.Source</td>
+                            <td>@item.Destination</td>
+                            <td>@item.TransactionDateTime.ToString("dd-MM-yyyy HH:mm")</td>
+                            <td>@item.Type</td>
+                            <td>@String.Format("{0:n}", item.Inflow)</td>
+                            <td>@String.Format("{0:n}", item.Outflow)</td>
+                            <td>@String.Format("{0:n}", item.WalletBalance)</td>
+                        </tr>
+                        }
+                    </tbody>
+                    
+            </table>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="modalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/wallet.js"></script>
+    @if (ViewData["IsSuccessful"] != null)
+    {
+        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', '', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
+    }
+}

@@ -1,0 +1,58 @@
+﻿@model WalletWithdrawVM
+
+
+
+
+<div class="container">
+    <h1 style="margin-bottom:2vh;">Withdraw</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Withdraw" asp-controller="Wallet" method="post">
+                <div class="form-group">
+                    <label class="control-label" asp-for="Jmbg">Jmbg:</label>
+                    <input class="form-control" asp-for="Jmbg" />
+                    <span asp-validation-for="Jmbg" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="Password">Password:</label>
+                    <input type="password" class="form-control" asp-for="Password" autocomplete="off" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label" asp-for="Amount">Amount:</label>
+                    <input id="Amount" class="form-control" pattern="^\d*(\.\d{0,2})?$" asp-format="{0:0.##}" asp-for="Amount" min="1" max="9999999999" autocomplete="off" />
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+                <input type="submit" value="Confirm" class="btn btn-primary" />
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/wallet.js"></script>
+    @if (ViewData["IsSuccessful"] != null)
+    {
+        <script type="text/javascript">ShowMessage('@ViewData["IsSuccessful"].ToString()', 'Successfuly withdrew funds', '@(ViewData["ErrorMessage"] == null ? "" : ViewData["ErrorMessage"])');</script>
+    }
+}
