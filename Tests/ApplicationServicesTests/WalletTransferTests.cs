@@ -270,6 +270,26 @@ namespace Tests.ApplicationServicesTests
             }
         }
 
+        [TestMethod]
+        public async Task WalletTransferSourceAndDestinationJmbgSameFailTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
+                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                await walletService.Deposit("0605996781029", password, 500000M);
+
+                //Act
+                //Assert
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await walletService.Transfer("0605996781029", password, "0605996781029", 500000), $"Source and destination Jmbg must be different.");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
+
 
         [TestMethod]
         public async Task WalletTransferWalletBlockedFailTest()

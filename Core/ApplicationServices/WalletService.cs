@@ -200,6 +200,10 @@ namespace Core.ApplicationServices
 
         public async Task Transfer(string sourceJmbg, string sourcePassword, string desitnationJmbg, decimal amount)
         {
+            if (sourceJmbg == desitnationJmbg)
+            {
+                throw new ArgumentException("Source and destination Jmbg must be different.");
+            }
             if (amount <= 0)
             {
                 throw new ArgumentException("Amount must be higher than 0 RSD.");
