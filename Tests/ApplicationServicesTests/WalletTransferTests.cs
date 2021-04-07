@@ -41,7 +41,8 @@ namespace Tests.ApplicationServicesTests
                 {"FirstTransactionFreeEachMonth", "True"},
                 {"FixedFeeLimit", "10000" },
                 {"FixedFee", "100"},
-                {"PercentageFee", "1"}
+                {"PercentageFee", "1"},
+                {"AdminPassword", "123456"}
             };
 
             Configuration = new ConfigurationBuilder()
@@ -292,21 +293,42 @@ namespace Tests.ApplicationServicesTests
 
 
         [TestMethod]
-        public async Task WalletTransferWalletBlockedFailTest()
+        public async Task WalletTransferSourceWalletBlockedFailTest()
         {
             try
             {
                 //Arrange
                 var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
-                string password = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
-                await walletService.Deposit("0605996781029", password, 750000M);
-                Wallet wallet = await CoreUnitOfWork.WalletRepository.GetById("0605996781029");
-                wallet.Block();
-                await CoreUnitOfWork.WalletRepository.Update(wallet);
-                await CoreUnitOfWork.SaveChangesAsync();
+                string password1 = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                string password2 = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210"); 
+                await walletService.Deposit("0605996781029", password1, 500000M);
+                await walletService.BlockWallet("0605996781029", Configuration["AdminPassword"]);
+
+
                 //Act
                 //Assert
-                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password, "0605996781028", 500000), $"Wallet '{0605996781029}' is blocked");
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password1, "0605996781028", 500000), $"Wallet '{0605996781029}' is blocked");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Unexpected error: " + ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public async Task WalletTransferDestinationWalletBlockedFailTest()
+        {
+            try
+            {
+                //Arrange
+                var walletService = new WalletService(CoreUnitOfWork, BankRoutingService, Configuration, FeeService);
+                string password1 = await walletService.CreateWallet("ime", "prezime", "0605996781029", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                string password2 = await walletService.CreateWallet("ime", "prezime", "0605996781028", (short)BankType.BrankoBank, "1234", "123456789876543210");
+                await walletService.Deposit("0605996781029", password1, 500000M);
+                await walletService.BlockWallet("0605996781028", Configuration["AdminPassword"]);
+                //Act
+                //Assert
+                await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await walletService.Transfer("0605996781029", password1, "0605996781028", 500000), $"Wallet '{0605996781029}' is blocked");
             }
             catch (Exception ex)
             {

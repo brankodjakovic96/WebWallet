@@ -230,6 +230,10 @@ namespace Core.ApplicationServices
             {
                 throw new ArgumentException($"No wallet for jmbg '{desitnationJmbg}'.");
             }
+            if (walletDestination.IsBlocked)
+            {
+                throw new InvalidOperationException($"Wallet '{desitnationJmbg}' is blocked");
+            }
 
             decimal maximalDeposit;
             decimal maximalWithdraw;
